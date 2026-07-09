@@ -61,12 +61,12 @@ export const fetchMemberById = createAsyncThunk(
   }
 );
 
-//#region fetch members by poshak group
+//#region fetch members by poshak group (optionally scoped to a group_type)
 export const fetchMembersByPoshakGroups = createAsyncThunk(
   "members/fetchMembersByPoshakGroups",
-  async (_, { rejectWithValue }) => {
+  async (groupType: string | undefined, { rejectWithValue }) => {
     try {
-      const response = await memberService.getMembersByPoshakGroup();
+      const response = await memberService.getMembersByPoshakGroup(groupType);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);

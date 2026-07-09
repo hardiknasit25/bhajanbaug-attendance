@@ -24,7 +24,11 @@ const initialState: ReportState = {
   loading: false,
 };
 
-type ReportArg = { filter: filterType; sabhaIds?: number[] };
+type ReportArg = {
+  filter: filterType;
+  sabhaIds?: number[];
+  groupType?: string;
+};
 
 //#region fetchMemberReport thunk
 export const fetchMembersReport = createAsyncThunk(
@@ -45,9 +49,13 @@ export const fetchMembersReport = createAsyncThunk(
 //#region fetchGroupReport thunk
 export const fetchGroupReport = createAsyncThunk(
   "report/fetchGroupReport",
-  async ({ filter, sabhaIds }: ReportArg, { rejectWithValue }) => {
+  async ({ filter, sabhaIds, groupType }: ReportArg, { rejectWithValue }) => {
     try {
-      const response = await reportService.getGroupReport(filter, sabhaIds);
+      const response = await reportService.getGroupReport(
+        filter,
+        sabhaIds,
+        groupType
+      );
       return response.data as {
         sabha_count: number;
         groups: PoshakGroupData[];

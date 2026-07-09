@@ -35,12 +35,18 @@ export const reportService = {
     }
   },
 
-  //#region fetch group report
-  getGroupReport: async (filter: filterType, sabhaIds?: number[]) => {
+  //#region fetch group report (optionally scoped to a group_type)
+  getGroupReport: async (
+    filter: filterType,
+    sabhaIds?: number[],
+    groupType?: string
+  ) => {
     try {
+      const params = buildReportParams(filter, sabhaIds);
+      if (groupType) params.group_type = groupType;
       const response = await axiosInstance.get(
         `${API_ENDPOINTS.REPORT.GROUP_REPORT}`,
-        { params: buildReportParams(filter, sabhaIds) }
+        { params }
       );
       return response.data;
     } catch (error) {

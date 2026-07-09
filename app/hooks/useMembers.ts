@@ -34,7 +34,8 @@ export const useMembers = () => {
   const thunks = {
     fetchMembers: () => dispatch(fetchMembers()),
     fetchMemberById: (memberId: number) => dispatch(fetchMemberById(memberId)),
-    fetchMembersByPoshakGroups: () => dispatch(fetchMembersByPoshakGroups()),
+    fetchMembersByPoshakGroups: (groupType?: string) =>
+      dispatch(fetchMembersByPoshakGroups(groupType)),
     createMember: (memberData: MemberPayload) =>
       dispatch(createMember(memberData)),
     updateMember: (memberId: number, memberData: MemberPayload) =>

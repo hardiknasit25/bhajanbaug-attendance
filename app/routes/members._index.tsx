@@ -12,6 +12,10 @@ import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  POSHAK_GROUP_TYPES,
+  type PoshakGroupType,
+} from "~/constant/constant";
 import { useMembers } from "~/hooks/useMembers";
 import { useMyPermissions } from "~/hooks/usePermissions";
 import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
@@ -25,7 +29,8 @@ export function meta({}: MetaArgs) {
   ];
 }
 
-type MemberTabs = "all-members" | "by-group";
+// "all-members" plus one tab per poshak group_type (poshak | sakshi | aatmiy).
+type MemberTabs = "all-members" | PoshakGroupType;
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const token = getTokenFromRequest(request);
@@ -60,15 +65,17 @@ export default function Members() {
   // --------------------------
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = (searchParams.get("tab") as MemberTabs) || "all-members";
-  // Fall back to a tab the user can access.
+  const isGroupTab = POSHAK_GROUP_TYPES.some((t) => t.key === requestedTab);
+  // Fall back to a tab the user can access. Group-type tabs are all gated by the
+  // single "poshak_group" permission; "poshak" is the default group tab.
   const activeTab: MemberTabs =
-    requestedTab === "by-group"
-      ? canByGroup
-        ? "by-group"
-        : "all-members"
+    isGroupTab && canByGroup
+      ? (requestedTab as PoshakGroupType)
       : canAllMembers
         ? "all-members"
-        : "by-group";
+        : canByGroup
+          ? "poshak"
+          : "all-members";
 
   // Progress for the per-group "separate QR codes" download (one PDF per member).
   const [qrProgress, setQrProgress] = useState<{
@@ -85,7 +92,8 @@ export default function Members() {
     if (activeTab === "all-members") {
       fetchMembers().unwrap();
     } else {
-      fetchMembersByPoshakGroups();
+      // activeTab is the group_type — load only that type's groups.
+      fetchMembersByPoshakGroups(activeTab);
     }
   }, [activeTab]);
 
@@ -94,7 +102,7 @@ export default function Members() {
     if (activeTab === "all-members") {
       fetchMembers();
     } else {
-      fetchMembersByPoshakGroups();
+      fetchMembersByPoshakGroups(activeTab);
     }
   };
 
@@ -148,13 +156,65 @@ export default function Members() {
     setQrProgress(null);
   };
 
+  // Member count shown in the header: all-members count, or the sum across the
+  // currently-loaded group_type's groups.
+  const groupMembersCount = filteredMembersByPoshakGroups.reduce(
+    (sum, g) => sum + (g.users?.length ?? 0),
+    0,
+  );
+  const totalCount =
+    activeTab === "all-members" ? filteredMembers.length : groupMembersCount;
+
+  // Shared content for every group_type tab — only the active tab is mounted, and
+  // state already holds that tab's data (fetched on tab change).
+  const groupTabContent = (
+    <>
+      {/* Separate-QR download progress */}
+      {qrProgress && (
+        <div className="border-b border-borderColor bg-white px-4 py-2">
+          <div className="mb-1 flex items-center justify-between text-sm text-textColor">
+            <span className="truncate">
+              Downloading QR: {qrProgress.label || "…"}
+            </span>
+            <span className="ml-2 shrink-0">
+              {qrProgress.current}/{qrProgress.total}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+            <div
+              className="h-full bg-primaryColor transition-all duration-300"
+              style={{
+                width: `${(qrProgress.current / qrProgress.total) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <LoadingSpinner />
+      ) : filteredMembersByPoshakGroups.length === 0 ? (
+        <div className="text-center mt-2 text-textLightColor">
+          No members found
+        </div>
+      ) : (
+        <GroupAccordionMember
+          groupData={filteredMembersByPoshakGroups}
+          from="members"
+          showDownload={true}
+          onDownloadGroup={handleGroupQrDownload}
+        />
+      )}
+    </>
+  );
+
   return (
     <LayoutWrapper
       headerConfigs={{
         title: "Members",
         children: <MemberBulkActions onImported={refreshMembers} />,
         className: "flex-col gap-2",
-        description: `Total ${filteredMembers.length} Members`,
+        description: `Total ${totalCount} Members`,
         showSearch: true,
         searchPlaceholder: "Search Members...",
         searchValue: searchText,
@@ -171,9 +231,12 @@ export default function Members() {
           {canAllMembers && (
             <TabsTrigger value="all-members">All Members</TabsTrigger>
           )}
-          {canByGroup && (
-            <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
-          )}
+          {canByGroup &&
+            POSHAK_GROUP_TYPES.map((t) => (
+              <TabsTrigger key={t.key} value={t.key}>
+                {t.label}
+              </TabsTrigger>
+            ))}
         </TabsList>
 
         {myLoaded && !canAllMembers && !canByGroup && (
@@ -216,47 +279,17 @@ export default function Members() {
         </TabsContent>
         )}
 
-        {/* Poshak Group */}
-        {canByGroup && (
-        <TabsContent value="by-group" className="h-full w-full overflow-hidden">
-          {/* Separate-QR download progress */}
-          {qrProgress && (
-            <div className="border-b border-borderColor bg-white px-4 py-2">
-              <div className="mb-1 flex items-center justify-between text-sm text-textColor">
-                <span className="truncate">
-                  Downloading QR: {qrProgress.label || "…"}
-                </span>
-                <span className="ml-2 shrink-0">
-                  {qrProgress.current}/{qrProgress.total}
-                </span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                <div
-                  className="h-full bg-primaryColor transition-all duration-300"
-                  style={{
-                    width: `${(qrProgress.current / qrProgress.total) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {loading ? (
-            <LoadingSpinner />
-          ) : filteredMembersByPoshakGroups.length === 0 ? (
-            <div className="text-center mt-2 text-textLightColor">
-              No members found
-            </div>
-          ) : (
-            <GroupAccordionMember
-              groupData={filteredMembersByPoshakGroups}
-              from="members"
-              showDownload={true}
-              onDownloadGroup={handleGroupQrDownload}
-            />
-          )}
-        </TabsContent>
-        )}
+        {/* Poshak group tabs — one per group_type, all sharing the same content. */}
+        {canByGroup &&
+          POSHAK_GROUP_TYPES.map((t) => (
+            <TabsContent
+              key={t.key}
+              value={t.key}
+              className="h-full w-full overflow-hidden"
+            >
+              {groupTabContent}
+            </TabsContent>
+          ))}
       </Tabs>
     </LayoutWrapper>
   );

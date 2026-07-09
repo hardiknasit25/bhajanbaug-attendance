@@ -26,11 +26,14 @@ export const memberService = {
     }
   },
 
-  //#region fetch members by poshak group
-  getMembersByPoshakGroup: async () => {
+  //#region fetch members by poshak group (optionally scoped to a group_type)
+  getMembersByPoshakGroup: async (groupType?: string) => {
     try {
+      const params: Record<string, string> = {};
+      if (groupType) params.group_type = groupType;
       const response = await axiosInstance.get(
-        `${API_ENDPOINTS.MEMBERS.BASE}/poshak-group`
+        `${API_ENDPOINTS.MEMBERS.BASE}/poshak-group`,
+        { params }
       );
       return response.data;
     } catch (error) {

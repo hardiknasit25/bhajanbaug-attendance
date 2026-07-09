@@ -30,6 +30,11 @@ function GroupAccordionMember({
         const poshakLeaderName = group?.leader_details
           ? `${group.leader_details.first_name} ${group.leader_details.middle_name} ${group.leader_details.last_name}`?.trim()
           : "Others";
+        // Group name shown under the leader name (hidden for the no-group bucket).
+        const groupName =
+          group?.group_name && group.group_name !== "Not in any group"
+            ? group.group_name
+            : null;
         const groupAllMembersPresentCount = group?.users?.reduce(
           (acc, member) => acc + (member.total_present || 0),
           0,
@@ -60,6 +65,11 @@ function GroupAccordionMember({
                     <span className="text-sm font-semibold text-textColor">
                       {poshakLeaderName}
                     </span>
+                    {groupName && (
+                      <span className="text-xs font-medium capitalize text-textColor/80">
+                        {groupName}
+                      </span>
+                    )}
                     <span className="text-xs text-textLightColor">
                       Total {group?.users?.length} Members
                     </span>

@@ -28,6 +28,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import {
+  POSHAK_GROUP_TYPES,
+  type PoshakGroupType,
+} from "~/constant/constant";
 import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
 import { useMyPermissions } from "~/hooks/usePermissions";
@@ -53,7 +57,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return null;
 };
 
-type ReportTabs = "all-members" | "by-group" | "completed-sabha";
+// "all-members" + one tab per poshak group_type (poshak | sakshi | aatmiy) + completed.
+type ReportTabs = "all-members" | PoshakGroupType | "completed-sabha";
+
+const isGroupTypeTab = (t: string): t is PoshakGroupType =>
+  POSHAK_GROUP_TYPES.some((gt) => gt.key === t);
 
 export default function Report() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -104,10 +112,16 @@ export default function Report() {
   const canCompleted = !myLoaded || can("completed_sabha", "read");
   const resolveTab = (t: ReportTabs): ReportTabs => {
     if (t === "all-members" && canAll) return t;
-    if (t === "by-group" && canGroup) return t;
+    if (isGroupTypeTab(t) && canGroup) return t;
     if (t === "completed-sabha" && canCompleted) return t;
-    return canAll ? "all-members" : canGroup ? "by-group" : "completed-sabha";
+    return canAll ? "all-members" : canGroup ? "poshak" : "completed-sabha";
   };
+
+  // The active group_type when a group tab is selected (else undefined).
+  const activeGroupType: PoshakGroupType | undefined = isGroupTypeTab(activeTab)
+    ? activeTab
+    : undefined;
+  const groupTypeParam = activeGroupType ? `&group_type=${activeGroupType}` : "";
 
   // Helper to update searchParams
   const updateParam = (key: string, value: string) => {
@@ -133,14 +147,14 @@ export default function Report() {
         );
         url = window.URL.createObjectURL(new Blob([response.data]));
         filename = "user_attendance_report.xlsx";
-      } else if (activeTab === "by-group") {
-        // Download group report
+      } else if (isGroupTypeTab(activeTab)) {
+        // Download group report for the active group_type only.
         const response = await axiosInstance.get(
-          `report/download/group?filter=${filterParam}${sabhaIdsParam}`,
+          `report/download/group?filter=${filterParam}${sabhaIdsParam}${groupTypeParam}`,
           { responseType: "blob" },
         );
         url = window.URL.createObjectURL(new Blob([response.data]));
-        filename = "group_attendance_report.xlsx";
+        filename = `group_attendance_report_${activeTab}.xlsx`;
       } else if (activeTab === "completed-sabha") {
         // Download completed sabha report
         // (Implement as needed)
@@ -189,7 +203,7 @@ export default function Report() {
       setSepProgress({ current: i + 1, total: groups.length, label: leaderName });
       try {
         const response = await axiosInstance.get(
-          `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}`,
+          `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}${groupTypeParam}`,
           { responseType: "blob" },
         );
         const safeName =
@@ -231,7 +245,7 @@ export default function Report() {
         : "";
     try {
       const response = await axiosInstance.get(
-        `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}`,
+        `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}${groupTypeParam}`,
         { responseType: "blob" },
       );
       // Filename = group leader's full name (sanitized for the filesystem).
@@ -313,8 +327,9 @@ export default function Report() {
 
     if (urlTab === "all-members") {
       fetchMembersReport(urlFilter, appliedSabhaIds);
-    } else if (urlTab === "by-group") {
-      fetchGroupReport(urlFilter, appliedSabhaIds);
+    } else if (isGroupTypeTab(urlTab)) {
+      // Load only the selected group_type's groups.
+      fetchGroupReport(urlFilter, appliedSabhaIds, urlTab);
     } else if (urlTab === "completed-sabha") {
       fetchSabhaList("completed");
     }
@@ -327,7 +342,7 @@ export default function Report() {
         title: "Report",
         children: (
           <div className="flex justify-center items-center gap-4 pr-3">
-            {activeTab === "by-group" ? (
+            {isGroupTypeTab(activeTab) ? (
               <Popover open={dlMenuOpen} onOpenChange={setDlMenuOpen}>
                 <PopoverTrigger asChild>
                   <button type="button" aria-label="Download options">
@@ -509,11 +524,15 @@ export default function Report() {
         }}
         className="w-full h-full flex flex-col justify-start"
       >
-        <TabsList className="w-full flex justify-between items-center bg-primaryColor rounded-none h-10 pb-2">
+        {/* Scrollable on mobile: tabs keep their natural width and scroll instead of squishing. */}
+        <TabsList className="w-full flex justify-start sm:justify-between items-center bg-primaryColor rounded-none h-10 pb-2 overflow-x-auto scrollbar-none [&>button]:shrink-0">
           {canAll && <TabsTrigger value="all-members">All Members</TabsTrigger>}
-          {canGroup && (
-            <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
-          )}
+          {canGroup &&
+            POSHAK_GROUP_TYPES.map((t) => (
+              <TabsTrigger key={t.key} value={t.key}>
+                {t.label}
+              </TabsTrigger>
+            ))}
           {canCompleted && (
             <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
           )}
@@ -557,22 +576,27 @@ export default function Report() {
         </TabsContent>
         )}
 
-        {/* GROUP TAB */}
-        {canGroup && (
-        <TabsContent value="by-group" className="h-full w-full overflow-y-auto">
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <GroupAccordionMember
-              groupData={filteredMembersByPoshakGroups}
-              from="report"
-              totalSabha={sabhaCount}
-              showDownload={true}
-              onDownloadGroup={handleGroupDownload}
-            />
-          )}
-        </TabsContent>
-        )}
+        {/* GROUP TABS — one per group_type, all sharing the same content. */}
+        {canGroup &&
+          POSHAK_GROUP_TYPES.map((t) => (
+            <TabsContent
+              key={t.key}
+              value={t.key}
+              className="h-full w-full overflow-y-auto"
+            >
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <GroupAccordionMember
+                  groupData={filteredMembersByPoshakGroups}
+                  from="report"
+                  totalSabha={sabhaCount}
+                  showDownload={true}
+                  onDownloadGroup={handleGroupDownload}
+                />
+              )}
+            </TabsContent>
+          ))}
 
         {/* COMPLETED SABHA */}
         {canCompleted && (
