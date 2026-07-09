@@ -6,20 +6,12 @@ import {
   useNavigate,
   type LoaderFunction,
 } from "react-router";
+import DeleteMemberDialog from "~/components/shared-component/DeleteMemberDialog";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
 import MemberQrDialog from "~/components/shared-component/MemberQrDialog";
 import Can from "~/components/shared-component/Can";
-import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog";
 import { useMembers } from "~/hooks/useMembers";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
@@ -38,33 +30,14 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 };
 function MemberDetails() {
   const { memberId } = useLoaderData();
-  const { loading, selectedMember, fetchMemberById, deleteMember } =
-    useMembers();
+  const { loading, selectedMember, fetchMemberById } = useMembers();
   const navigate = useNavigate();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMemberById(memberId);
   }, [memberId]);
-
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
-    setDeleteError(null);
-    try {
-      await deleteMember(Number(memberId)).unwrap();
-      setDeleteOpen(false);
-      navigate("/members");
-    } catch (error) {
-      setDeleteError(
-        typeof error === "string" ? error : "Unable to delete this member."
-      );
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   function calculateAge(birthDateInput: string | Date | undefined | null) {
     if (!birthDateInput) return null;
@@ -121,10 +94,7 @@ function MemberDetails() {
               <Trash2
                 size={18}
                 className="cursor-pointer"
-                onClick={() => {
-                  setDeleteError(null);
-                  setDeleteOpen(true);
-                }}
+                onClick={() => setDeleteOpen(true)}
               />
             </Can>
           </div>
@@ -193,39 +163,21 @@ function MemberDetails() {
       )}
 
       {/* Delete confirmation */}
-      <Dialog open={deleteOpen} onOpenChange={(open) => !open && setDeleteOpen(false)}>
-        <DialogContent className="rounded-xl">
-          <DialogHeader>
-            <DialogTitle className="text-textColor">Delete Member</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this member? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-
-          {deleteError && <p className="text-sm text-errorColor">{deleteError}</p>}
-
-          <DialogFooter className="flex flex-row gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1 rounded-full"
-              onClick={() => setDeleteOpen(false)}
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              className="flex-1 rounded-full bg-deleteButtonColor text-white hover:bg-deleteButtonColor/90"
-              onClick={handleConfirmDelete}
-              disabled={deleting}
-            >
-              {deleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteMemberDialog
+        memberId={Number(memberId)}
+        memberName={
+          selectedMember
+            ? `${selectedMember.first_name ?? ""} ${
+                selectedMember.middle_name ?? ""
+              } ${selectedMember.last_name ?? ""}`
+                .replace(/\s+/g, " ")
+                .trim()
+            : undefined
+        }
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onDeleted={() => navigate("/members")}
+      />
     </LayoutWrapper>
   );
 }

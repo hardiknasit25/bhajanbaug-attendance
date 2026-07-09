@@ -15,6 +15,7 @@ import { Sheet } from "./components/ui/sheet";
 import { useEffect } from "react";
 import { registerServiceWorker } from "./utils/pwa";
 import { InstallPWA } from "./components/InstallPWA";
+import { Toaster } from "./components/shared-component/Toaster";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -63,6 +64,7 @@ export default function App() {
     <Sheet>
       <Provider store={store}>
         <InstallPWA />
+        <Toaster />
         <Outlet />
       </Provider>
     </Sheet>

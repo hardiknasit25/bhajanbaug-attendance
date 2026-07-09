@@ -27,6 +27,12 @@ function MemberListCard({
   const navigate = useNavigate();
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const memberName = `${member.first_name ?? ""} ${member.middle_name ?? ""} ${
+    member.last_name ?? ""
+  }`
+    .replace(/\s+/g, " ")
+    .trim();
+
   const handlePresentClick = (id: number) => {
     // Dispatch directly so each card does NOT subscribe to the whole sabha slice.
     dispatch(doMemberPresent(id));
@@ -165,9 +171,7 @@ function MemberListCard({
       {from === "members" && (
         <MemberQrDialog
           memberId={member.id}
-          memberName={`${member.first_name ?? ""} ${member.middle_name ?? ""} ${
-            member.last_name ?? ""
-          }`}
+          memberName={memberName}
           smkNo={member.smk_no}
           mobile={member.mobile}
           iconSize={20}

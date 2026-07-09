@@ -282,6 +282,12 @@ const memberSlice = createSlice({
     builder
       .addCase(deleteMember.fulfilled, (state, action) => {
         state.members = state.members.filter((m) => m.id !== action.payload);
+        state.membersByPoshakGroups = state.membersByPoshakGroups.map(
+          (group) => ({
+            ...group,
+            users: group.users.filter((u) => u.id !== action.payload),
+          })
+        );
         state.totalMembers = Math.max(0, state.totalMembers - 1);
         if (state.selectedMember?.id === action.payload) {
           state.selectedMember = null;

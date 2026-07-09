@@ -10,8 +10,8 @@ import sessionStorageService from "~/lib/sessionStorage";
 // const BASE_URL = "http://172.17.0.49:6111/api/v1/"; // hari vaghasiya IP address
 // const BASE_URL = "http://192.168.195.252:6111/api/v1/"; // local laptop IP address
 // const BASE_URL = "http://localhost:6956/api/v1"; // local laptop IP address
-const BASE_URL = "https://smaran.vrutti.app/api/v1/"; //  host url
-// const BASE_URL = "http://172.17.0.71:6111/api/v1/"; // local vrutti PC IP address
+// const BASE_URL = "https://smaran.vrutti.app/api/v1/"; //  host url
+const BASE_URL = "http://172.17.0.71:6111/api/v1/"; // local vrutti PC IP address
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: BASE_URL,
