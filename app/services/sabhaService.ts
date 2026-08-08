@@ -109,6 +109,7 @@ export const sabhaService = {
       const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.BASE}`, {
         title,
         sabha_type: sabhaType,
+        sabha_date: new Date().toISOString(),
       });
       return response.data;
     } catch (error) {

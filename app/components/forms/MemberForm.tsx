@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useMembers } from "~/hooks/useMembers";
 import { cn } from "~/lib/utils";
@@ -11,7 +11,9 @@ import InputController from "../formController.tsx/InputController";
 import MultiSelect from "../formController.tsx/MultiSelect";
 import TextAreaController from "../formController.tsx/TextAreaController";
 import ErrorMessage from "../shared-component/ErrorMessage";
+import { toast } from "../shared-component/Toaster";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Spinner } from "../ui/spinner";
 import { useNavigate } from "react-router";
 
 interface MemberFormProps {
@@ -28,6 +30,7 @@ const occupationOptions = [
 function MemberForm({ mode = "create", initialData }: MemberFormProps) {
   const { groupSelect, fetchGroupSelect, createMember, updateMember } = useMembers();
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // In "create" mode only the minimal fields are shown; the rest are revealed in
   // "update" mode (so the full user record can be edited).
@@ -70,14 +73,24 @@ function MemberForm({ mode = "create", initialData }: MemberFormProps) {
       is_job: data.occupation === "job",
       family_leader_id: data.family_leader_id !== undefined && data.family_leader_id !== null ? data.family_leader_id : null,
     };
-    if (mode === "create") {
-      const result = await createMember(payload).unwrap();
-      if (result) {
+    setSubmitError(null);
+    try {
+      if (mode === "create") {
+        await createMember(payload).unwrap();
+        toast.success("Member created successfully");
         navigate(`/members`);
+      } else {
+        await updateMember(initialData?.id as number, payload).unwrap();
+        toast.success("Member updated successfully");
+        navigate(`/members/details/${initialData?.id}`);
       }
-    } else if (mode === "update") {
-      await updateMember(initialData?.id as number, payload).unwrap();
-      navigate(`/members/details/${initialData?.id}`);
+    } catch (error) {
+      const message =
+        typeof error === "string"
+          ? error
+          : `Failed to ${mode === "create" ? "create" : "update"} member. Please try again.`;
+      setSubmitError(message);
+      toast.error(message);
     }
   };
 
@@ -274,8 +287,10 @@ function MemberForm({ mode = "create", initialData }: MemberFormProps) {
         )}
 
         {/* Submit Button */}
-        <div className="pt-4">
-          <button type="submit" disabled={isSubmitting} className={cn("w-full rounded-full bg-primaryColor text-white font-medium py-2 px-4 transition-colors duration-200", isSubmitting && "opacity-60 cursor-not-allowed")}>
+        <div className="pt-4 space-y-2">
+          {submitError && <ErrorMessage error={submitError} />}
+          <button type="submit" disabled={isSubmitting} className={cn("w-full flex items-center justify-center gap-2 rounded-full bg-primaryColor text-white font-medium py-2 px-4 transition-colors duration-200", isSubmitting && "opacity-60 cursor-not-allowed")}>
+            {isSubmitting && <Spinner />}
             {mode === "create" ? (isSubmitting ? "Creating..." : "Create Member") : isSubmitting ? "Updating..." : "Update Member"}
           </button>
         </div>
