@@ -84,6 +84,8 @@ export default function Report() {
     total: number;
     label: string;
   } | null>(null);
+  // Transient note shown when the device can't share files (falls back to download).
+  const [shareNote, setShareNote] = useState<string | null>(null);
 
   const {
     loading,
@@ -266,6 +268,72 @@ export default function Report() {
       }, 100);
     } catch (error) {
       throw error;
+    }
+  };
+
+  // Share a single group's Excel report to WhatsApp via the device share sheet.
+  // On phones this opens the native share menu with the .xlsx attached; the user
+  // picks WhatsApp and the poshak leader. Desktops that can't share files fall
+  // back to a normal download.
+  const XLSX_MIME =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  const handleGroupShare = async (
+    groupId: number | null,
+    leaderName: string,
+  ) => {
+    const filterParam = selectedFilter || "lastMonthAllSabha";
+    const groupParam = groupId == null ? "none" : String(groupId);
+    const fallbackName = groupId == null ? "No Group" : `group_${groupId}`;
+    const sabhaIdsParam =
+      appliedSabhaIds.length > 0
+        ? `&sabha_ids=${appliedSabhaIds.join(",")}`
+        : "";
+    const safeName =
+      (leaderName || fallbackName)
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .replace(/\s+/g, " ")
+        .trim() || fallbackName;
+    const filename = `${safeName}.xlsx`;
+    try {
+      const response = await axiosInstance.get(
+        `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}${groupTypeParam}`,
+        { responseType: "blob" },
+      );
+      const file = new File([response.data], filename, { type: XLSX_MIME });
+      const shareData: ShareData = {
+        files: [file],
+        title: `${leaderName || fallbackName} — Attendance Report`,
+        text: `Poshak group attendance report: ${leaderName || fallbackName}`,
+      };
+
+      const canShareFiles =
+        typeof navigator !== "undefined" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] });
+
+      if (canShareFiles) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: download the file so the user can attach it in WhatsApp manually.
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        setShareNote(
+          "Sharing files isn't supported on this device, so the report was downloaded. Open WhatsApp and attach it to send.",
+        );
+        setTimeout(() => setShareNote(null), 6000);
+      }
+    } catch (error: any) {
+      // User dismissed the share sheet — not an error.
+      if (error?.name === "AbortError") return;
+      console.error("Failed to share group report", error);
+      setShareNote("Couldn't share the report. Please try again.");
+      setTimeout(() => setShareNote(null), 5000);
     }
   };
 
@@ -493,6 +561,13 @@ export default function Report() {
         },
       }}
     >
+      {/* WhatsApp share fallback note */}
+      {shareNote && (
+        <div className="sticky top-0 z-30 border-b border-borderColor bg-amber-50 px-4 py-2 text-center text-sm text-amber-800">
+          {shareNote}
+        </div>
+      )}
+
       {/* Download Separate progress */}
       {sepProgress && (
         <div className="sticky top-0 z-30 bg-white border-b border-borderColor px-4 py-2">
@@ -593,6 +668,7 @@ export default function Report() {
                   totalSabha={sabhaCount}
                   showDownload={true}
                   onDownloadGroup={handleGroupDownload}
+                  onShareGroup={handleGroupShare}
                 />
               )}
             </TabsContent>
