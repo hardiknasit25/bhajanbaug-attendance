@@ -273,10 +273,28 @@ export default function Report() {
 
   // Share a single group's Excel report to WhatsApp via the device share sheet.
   // On phones this opens the native share menu with the .xlsx attached; the user
-  // picks WhatsApp and the poshak leader. Desktops that can't share files fall
-  // back to a normal download.
+  // picks WhatsApp and the poshak leader. When sharing isn't available (desktop,
+  // or a standalone PWA where navigator.share throws) it falls back to a download.
   const XLSX_MIME =
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+  const downloadReportBlob = (data: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+  };
+  const noteDownloadedFallback = () => {
+    setShareNote(
+      "Sharing isn't available here, so the report was downloaded. Open WhatsApp and attach it to send.",
+    );
+    setTimeout(() => setShareNote(null), 6000);
+  };
+
   const handleGroupShare = async (
     groupId: number | null,
     leaderName: string,
@@ -294,47 +312,49 @@ export default function Report() {
         .replace(/\s+/g, " ")
         .trim() || fallbackName;
     const filename = `${safeName}.xlsx`;
+
+    // 1. Generate the report. A failure here is a real error (not a share issue).
+    let data: Blob;
     try {
       const response = await axiosInstance.get(
         `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}${groupTypeParam}`,
         { responseType: "blob" },
       );
-      const file = new File([response.data], filename, { type: XLSX_MIME });
-      const shareData: ShareData = {
-        files: [file],
-        title: `${leaderName || fallbackName} — Attendance Report`,
-        text: `Poshak group attendance report: ${leaderName || fallbackName}`,
-      };
-
-      const canShareFiles =
-        typeof navigator !== "undefined" &&
-        typeof navigator.canShare === "function" &&
-        navigator.canShare({ files: [file] });
-
-      if (canShareFiles) {
-        await navigator.share(shareData);
-      } else {
-        // Fallback: download the file so the user can attach it in WhatsApp manually.
-        const url = window.URL.createObjectURL(response.data);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        setShareNote(
-          "Sharing files isn't supported on this device, so the report was downloaded. Open WhatsApp and attach it to send.",
-        );
-        setTimeout(() => setShareNote(null), 6000);
-      }
-    } catch (error: any) {
-      // User dismissed the share sheet — not an error.
-      if (error?.name === "AbortError") return;
-      console.error("Failed to share group report", error);
-      setShareNote("Couldn't share the report. Please try again.");
+      data = response.data as Blob;
+    } catch (error) {
+      console.error("Failed to generate group report", error);
+      setShareNote("Couldn't generate the report. Please try again.");
       setTimeout(() => setShareNote(null), 5000);
+      return;
     }
+
+    // 2. Try the native share sheet with the file attached.
+    const file = new File([data], filename, { type: XLSX_MIME });
+    const canShareFiles =
+      typeof navigator !== "undefined" &&
+      typeof navigator.canShare === "function" &&
+      navigator.canShare({ files: [file] });
+
+    if (canShareFiles) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: `${leaderName || fallbackName} — Attendance Report`,
+          text: `Poshak group attendance report: ${leaderName || fallbackName}`,
+        });
+        return; // shared successfully
+      } catch (error: any) {
+        // User dismissed the sheet — do nothing, don't download.
+        if (error?.name === "AbortError") return;
+        // Any other failure (e.g. PWA/iOS share throwing, lost user activation):
+        // fall through to the download fallback so the report isn't lost.
+        console.error("Share failed, falling back to download", error);
+      }
+    }
+
+    // 3. Fallback: download so the user can attach it in WhatsApp manually.
+    downloadReportBlob(data, filename);
+    noteDownloadedFallback();
   };
 
   // Load the completed-sabha list once (for the multi-select filter in the drawer).
