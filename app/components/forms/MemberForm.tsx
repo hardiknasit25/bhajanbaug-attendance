@@ -139,6 +139,7 @@ function MemberForm({ mode = "create", initialData }: MemberFormProps) {
                   value={(field.value || []).map(String)}
                   onChange={(val) => field.onChange(val.map(Number))}
                   placeholder="Select group leaders"
+                  searchPlaceholder="Search leader name..."
                 />
                 {error && <ErrorMessage error={error.message as string} />}
               </>

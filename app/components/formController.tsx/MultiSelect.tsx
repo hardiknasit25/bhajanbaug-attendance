@@ -4,7 +4,9 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   Command,
+  CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from "~/components/ui/command";
@@ -24,6 +26,7 @@ interface MultiSelectProps {
   value: string[];
   onChange: (value: string[]) => void;
   placeholder?: string;
+  searchPlaceholder?: string;
 }
 
 export default function MultiSelect({
@@ -31,6 +34,7 @@ export default function MultiSelect({
   value,
   onChange,
   placeholder = "Select options",
+  searchPlaceholder = "Search...",
 }: MultiSelectProps) {
   const [open, setOpen] = useState(false);
 
@@ -65,11 +69,15 @@ export default function MultiSelect({
 
       <PopoverContent className="p-0 !w-full">
         <Command className="w-full">
+          {/* Type-to-filter — the leader list holds dozens of names. */}
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList className="w-full">
+            <CommandEmpty>No results found</CommandEmpty>
             <CommandGroup className="w-full">
               {options.map((opt) => (
                 <CommandItem
                   key={opt.value}
+                  value={opt.label}
                   onSelect={() => toggleValue(opt.value)}
                   className="flex items-center gap-2 cursor-pointer"
                 >
