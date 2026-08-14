@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { cn } from "~/lib/utils";
-import { InstallPWA } from "../InstallPWA";
 import type { HeaderProps } from "./Header";
 import Header from "./Header";
 import Tab from "./Tab";

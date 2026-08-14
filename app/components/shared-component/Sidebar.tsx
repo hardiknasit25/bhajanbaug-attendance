@@ -1,4 +1,12 @@
-import { KeyRound, LogOut, ShieldCheck, User } from "lucide-react";
+import {
+  Boxes,
+  Download,
+  KeyRound,
+  LogOut,
+  ShieldCheck,
+  User,
+  UsersRound,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { AUTH_TOKEN } from "~/constant/constant";
@@ -8,12 +16,15 @@ import { authService } from "~/services/authService";
 import { cn } from "~/lib/utils";
 import type { UserProfile } from "~/types/auth.interface";
 import { deleteCookie } from "~/utils/cookie";
+import { promptInstall, useInstallAvailable } from "~/utils/installPrompt";
 import { SheetClose } from "../ui/sheet";
 
 function Sidebar() {
   const navigate = useNavigate();
   const { can } = useMyPermissions();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  // True while the browser offers PWA installation (hidden once installed).
+  const installAvailable = useInstallAvailable();
 
   // Load the logged-in user's profile for the drawer header.
   useEffect(() => {
@@ -40,11 +51,25 @@ function Sidebar() {
   // Gated management links (only shown when the user can read that module).
   const managementItems = [
     {
-      key: "management",
-      label: "Roles & Modules",
+      key: "roles",
+      label: "Roles",
       icon: ShieldCheck,
-      onClick: () => navigate("/management"),
-      visible: can("role", "read") || can("module", "read"),
+      onClick: () => navigate("/role"),
+      visible: can("role", "read"),
+    },
+    {
+      key: "modules",
+      label: "Modules",
+      icon: Boxes,
+      onClick: () => navigate("/module"),
+      visible: can("module", "read"),
+    },
+    {
+      key: "groups",
+      label: "Groups",
+      icon: UsersRound,
+      onClick: () => navigate("/groups"),
+      visible: can("poshak_group", "read"),
     },
     {
       key: "permission",
@@ -65,7 +90,7 @@ function Sidebar() {
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-start justify-start gap-1 p-6">
+      <div className="flex w-full flex-1 flex-col items-start justify-start gap-1 overflow-y-auto p-6">
         {/* Profile */}
         <SheetClose asChild>
           <button type="button" className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-textColor transition-colors hover:bg-gray-100">
@@ -74,19 +99,7 @@ function Sidebar() {
           </button>
         </SheetClose>
 
-        {/* Log out */}
-        <SheetClose asChild>
-          <button
-            type="button"
-            onClick={handleLogOut}
-            className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-textColor transition-colors hover:bg-gray-100"
-          >
-            <LogOut size={20} className="text-textLightColor" />
-            <span className="text-lg font-light uppercase">log out</span>
-          </button>
-        </SheetClose>
-
-        {/* Management (role / permission) — below profile & logout, gated by access */}
+        {/* Management (role / permission) — gated by access */}
         {managementItems.length > 0 && (
           <>
             <div className="my-3 w-full border-t border-borderColor" />
@@ -108,6 +121,35 @@ function Sidebar() {
             })}
           </>
         )}
+
+        {/* Pinned to the bottom of the drawer: install (when offered) + log out */}
+        <div className="mt-auto flex w-full flex-col gap-1 pt-4">
+          <div className="mb-2 w-full border-t border-borderColor" />
+
+          {installAvailable && (
+            <SheetClose asChild>
+              <button
+                type="button"
+                onClick={() => promptInstall()}
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-textColor transition-colors hover:bg-gray-100"
+              >
+                <Download size={20} className="text-textLightColor" />
+                <span className="text-lg font-light uppercase">Install App</span>
+              </button>
+            </SheetClose>
+          )}
+
+          <SheetClose asChild>
+            <button
+              type="button"
+              onClick={handleLogOut}
+              className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-textColor transition-colors hover:bg-gray-100"
+            >
+              <LogOut size={20} className="text-textLightColor" />
+              <span className="text-lg font-light uppercase">log out</span>
+            </button>
+          </SheetClose>
+        </div>
       </div>
     </div>
   );

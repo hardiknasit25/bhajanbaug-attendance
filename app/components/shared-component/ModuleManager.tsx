@@ -1,6 +1,14 @@
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import DataTable from "~/components/shared-component/DataTable";
+import {
+  EnumFilter,
+  EnumFloatingFilter,
+  type EnumFilterOption,
+} from "~/components/shared-component/EnumFilter";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
+import ViewToggle from "~/components/shared-component/ViewToggle";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -12,6 +20,7 @@ import {
 } from "~/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { usePermission } from "~/hooks/usePermissions";
+import { useViewMode } from "~/hooks/useViewMode";
 import { moduleService } from "~/services/moduleService";
 import type { ModuleItem, ModuleType } from "~/types/module.interface";
 
@@ -32,6 +41,83 @@ export default function ModuleManager() {
   const [moduleToDelete, setModuleToDelete] = useState<ModuleItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useViewMode("modules");
+
+  // module type is a fixed enum in the database — filter offers exactly those values.
+  const MODULE_TYPE_OPTIONS: EnumFilterOption[] = [
+    { value: "user", label: "User" },
+    { value: "admin", label: "Admin" },
+  ];
+
+  // Table-view columns (actions mirror the card buttons).
+  const columnDefs = useMemo<ColDef<ModuleItem>[]>(
+    () => [
+      {
+        field: "name",
+        headerName: "Name",
+        minWidth: 130,
+        filter: true,
+        floatingFilter: true,
+      },
+      {
+        field: "key",
+        headerName: "Key",
+        minWidth: 130,
+        filter: true,
+        floatingFilter: true,
+      },
+      {
+        field: "type",
+        headerName: "Type",
+        minWidth: 100,
+        valueFormatter: (p) => p.value || "—",
+        filter: EnumFilter,
+        filterParams: { field: "type", options: MODULE_TYPE_OPTIONS },
+        floatingFilter: true,
+        floatingFilterComponent: EnumFloatingFilter,
+        floatingFilterComponentParams: { options: MODULE_TYPE_OPTIONS },
+      },
+      {
+        headerName: "Actions",
+        sortable: false,
+        resizable: false,
+        minWidth: 110,
+        maxWidth: 120,
+        cellRenderer: (params: ICellRendererParams<ModuleItem>) => {
+          const m = params.data;
+          if (!m) return null;
+          return (
+            <div className="flex h-full items-center gap-1">
+              {canUpdate && (
+                <button
+                  type="button"
+                  onClick={() => setFormState({ module: m })}
+                  aria-label={`Edit ${m.name}`}
+                  className="flex size-8 items-center justify-center rounded-full text-textLightColor transition-colors hover:bg-gray-100 hover:text-primaryColor"
+                >
+                  <Pencil size={16} />
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteError(null);
+                    setModuleToDelete(m);
+                  }}
+                  aria-label={`Delete ${m.name}`}
+                  className="flex size-8 items-center justify-center rounded-full text-deleteButtonColor transition-colors hover:bg-red-50"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [canUpdate, canDelete]
+  );
 
   const loadModules = async () => {
     setLoading(true);
@@ -111,22 +197,31 @@ export default function ModuleManager() {
         <span className="text-sm text-textLightColor">
           Total {modules.length} Modules
         </span>
-        {canCreate && (
-          <button
-            type="button"
-            onClick={() => setFormState({})}
-            className="flex items-center gap-1 rounded-full bg-primaryColor px-3 py-1.5 text-sm font-medium text-white"
-          >
-            <Plus size={16} />
-            <span className="uppercase">Add Module</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <ViewToggle value={viewMode} onChange={setViewMode} />
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => setFormState({})}
+              className="flex items-center gap-1 rounded-full bg-primaryColor px-3 py-1.5 text-sm font-medium text-white"
+            >
+              <Plus size={16} />
+              <span className="uppercase">Add Module</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
         <LoadingSpinner />
       ) : modules.length === 0 ? (
         <div className="mt-8 text-center text-textLightColor">No modules found</div>
+      ) : viewMode === "table" ? (
+        <DataTable
+          rowData={modules}
+          columnDefs={columnDefs}
+          stateKey="modules"
+        />
       ) : (
         modules.map((m) => (
           <div

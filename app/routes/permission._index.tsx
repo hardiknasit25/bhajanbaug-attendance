@@ -1,13 +1,16 @@
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { useEffect, useMemo, useState } from "react";
 import {
   redirect,
   type LoaderFunctionArgs,
   type MetaArgs,
 } from "react-router";
+import DataTable from "~/components/shared-component/DataTable";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import ModulePermissionCard from "~/components/shared-component/ModulePermissionCard";
 import ToggleSwitch from "~/components/shared-component/ToggleSwitch";
+import ViewToggle from "~/components/shared-component/ViewToggle";
 import { Accordion } from "~/components/ui/accordion";
 import {
   Select,
@@ -18,6 +21,7 @@ import {
 } from "~/components/ui/select";
 import { useMyPermissions } from "~/hooks/usePermissions";
 import { useRoles } from "~/hooks/useRoles";
+import { useViewMode } from "~/hooks/useViewMode";
 import type {
   ModulePermission,
   PermissionAction,
@@ -131,6 +135,87 @@ export default function PermissionPage() {
     [roleSelect, selectedRoleId]
   );
 
+  const [viewMode, setViewMode] = useViewMode("permission");
+
+  // Table-view columns: one row per module, editable controls in each cell.
+  const columnDefs = useMemo<ColDef<ModulePermission>[]>(() => {
+    const levelColumn = (
+      action: PermissionAction,
+      header: string
+    ): ColDef<ModulePermission> => ({
+      headerName: header,
+      field: action,
+      sortable: false,
+      minWidth: 100,
+      cellRenderer: (params: ICellRendererParams<ModulePermission>) => {
+        const perm = params.data;
+        if (!perm) return null;
+        return (
+          <div className="flex h-full items-center">
+            <select
+              value={perm[action] as PermissionLevel}
+              disabled={readOnly}
+              onChange={(e) =>
+                handleModuleChange(
+                  perm,
+                  action,
+                  e.target.value as PermissionLevel
+                )
+              }
+              className="w-full rounded-lg border border-borderColor bg-white px-2 py-1 text-sm text-textColor outline-none focus:border-primaryColor disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {LEVELS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+      },
+    });
+
+    const toggleColumn = (
+      action: PermissionAction,
+      header: string
+    ): ColDef<ModulePermission> => ({
+      headerName: header,
+      field: action,
+      sortable: false,
+      minWidth: 90,
+      cellRenderer: (params: ICellRendererParams<ModulePermission>) => {
+        const perm = params.data;
+        if (!perm) return null;
+        return (
+          <div className="flex h-full items-center">
+            <ToggleSwitch
+              checked={!!perm[action]}
+              disabled={readOnly}
+              onChange={(v) => handleModuleChange(perm, action, v)}
+              aria-label={`${header} for ${perm.module_name}`}
+            />
+          </div>
+        );
+      },
+    });
+
+    return [
+      {
+        field: "module_name",
+        headerName: "Module",
+        minWidth: 140,
+        pinned: "left",
+      },
+      toggleColumn("p_create", "Create"),
+      toggleColumn("p_publish", "Publish"),
+      levelColumn("p_select", "Select"),
+      levelColumn("p_read", "Read"),
+      levelColumn("p_update", "Update"),
+      levelColumn("p_delete", "Delete"),
+    ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readOnly, selectedRoleId]);
+
   return (
     <LayoutWrapper
       headerConfigs={{
@@ -231,6 +316,10 @@ export default function PermissionPage() {
         )}
 
         {/* Module list */}
+        <div className="flex justify-end">
+          <ViewToggle value={viewMode} onChange={setViewMode} />
+        </div>
+
         {loading ? (
           <LoadingSpinner />
         ) : modulePermissions.length === 0 ? (
@@ -239,6 +328,13 @@ export default function PermissionPage() {
               ? "Select a role to manage permissions"
               : "No modules found"}
           </div>
+        ) : viewMode === "table" ? (
+          <DataTable
+            rowData={modulePermissions}
+            columnDefs={columnDefs}
+            rowHeight={48}
+            stateKey="permission"
+          />
         ) : (
           <Accordion type="single" collapsible className="flex flex-col gap-3">
             {modulePermissions.map((perm) => (

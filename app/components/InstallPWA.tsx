@@ -1,70 +1,35 @@
-import { useState, useEffect } from "react";
-import { Download, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { Button } from "./ui/button";
-import { isPWAInstalled } from "../utils/pwa";
+import {
+  dismissBannerForever,
+  isBannerDismissed,
+  promptInstall,
+  useInstallAvailable,
+} from "../utils/installPrompt";
 
+// Floating install banner. Shows only while the browser offers installation,
+// and once the user closes it it never auto-shows again (localStorage flag) —
+// after that the drawer's "Install App" button is the way to install.
 export const InstallPWA = () => {
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const installAvailable = useInstallAvailable();
+  const [dismissed, setDismissed] = useState(true);
 
+  // Read the persisted flag on the client only (SSR has no localStorage).
   useEffect(() => {
-    // Check if PWA is already installed
-    const isInstalled = isPWAInstalled();
-    console.log("PWA installed check:", isInstalled);
-
-    if (isInstalled) {
-      console.log("PWA already installed, not showing prompt");
-      return;
-    }
-
-    // Listen for beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
-      console.log("beforeinstallprompt event fired!");
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowInstallPrompt(true);
-    };
-
-    // Listen for appinstalled event
-    const handleAppInstalled = () => {
-      console.log("PWA was installed");
-      setShowInstallPrompt(false);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("appinstalled", handleAppInstalled);
-
-    console.log("InstallPWA component mounted, listening for install event");
-
-    return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt
-      );
-      window.removeEventListener("appinstalled", handleAppInstalled);
-    };
+    setDismissed(isBannerDismissed());
   }, []);
 
   const handleDismiss = () => {
-    setShowInstallPrompt(false);
+    dismissBannerForever();
+    setDismissed(true);
   };
 
   const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        console.log("User accepted the install prompt");
-      } else {
-        console.log("User dismissed the install prompt");
-      }
-      setDeferredPrompt(null);
-      setShowInstallPrompt(false);
-    }
+    await promptInstall();
   };
 
-  if (!showInstallPrompt) {
+  if (!installAvailable || dismissed) {
     return null;
   }
 

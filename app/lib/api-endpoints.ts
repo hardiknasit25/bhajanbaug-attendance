@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
   },
 
   GROUPS: {
+    BASE: "poshak-group",
     SELECT: "poshak-group/select",
   },
 

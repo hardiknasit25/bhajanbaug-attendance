@@ -4,6 +4,7 @@ import sabhaReducer from "./slice/sabhaSlice";
 import reportReducer from "./slice/reportSlice";
 import roleReducer from "./slice/roleSlice";
 import permissionReducer from "./slice/permissionSlice";
+import groupReducer from "./slice/groupSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     report: reportReducer,
     roles: roleReducer,
     permissions: permissionReducer,
+    groups: groupReducer,
   },
 });
 
