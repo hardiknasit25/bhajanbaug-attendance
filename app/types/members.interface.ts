@@ -23,6 +23,7 @@ export interface MemberData {
   seva?: string;
   parichit_bhakat_name?: string;
   group_id?: number[];
+  groups?: { id: number; group_name: string; leader_name: string | null }[];
   user_type?: "yuva" | "group";
   attendance_id?: number;
   is_present?: boolean;

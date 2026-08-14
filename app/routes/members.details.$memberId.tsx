@@ -146,6 +146,17 @@ function MemberDetails() {
               ]}
             />
             <MemberDetail
+              title="Poshak Group"
+              details={
+                selectedMember?.groups?.length
+                  ? selectedMember.groups.map((group) => ({
+                      title: group.group_name,
+                      value: group.leader_name,
+                    }))
+                  : [{ title: "group leader", value: null }]
+              }
+            />
+            <MemberDetail
               title="Other"
               details={[
                 {
