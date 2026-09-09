@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   closeSabhaFormDailog,
   createSabha,
+  deleteSabha,
   doMemberAbsent,
   doMemberPresent,
   fetchSabhaById,
@@ -53,6 +54,7 @@ export const useSabha = () => {
       dispatch(createSabha({ title, sabhaType })),
     updateSabha: (sabhaId: number, title: string, sabhaType: SabhaType) =>
       dispatch(updateSabha({ sabhaId, title, sabhaType })),
+    deleteSabha: (sabhaId: number) => dispatch(deleteSabha(sabhaId)),
   };
 
   return {

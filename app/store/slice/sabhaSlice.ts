@@ -187,6 +187,19 @@ export const updateSabha = createAsyncThunk(
   },
 );
 
+//#region delete sabha
+export const deleteSabha = createAsyncThunk(
+  "sabha/deleteSabha",
+  async (sabhaId: number, { rejectWithValue }) => {
+    try {
+      await sabhaService.deleteSabha(sabhaId);
+      return sabhaId;
+    } catch (error) {
+      return rejectWithValue("Failed to delete sabha");
+    }
+  },
+);
+
 // #region sabha slice
 const sabhaSlice = createSlice({
   name: "sabha",
@@ -443,6 +456,25 @@ const sabhaSlice = createSlice({
         state.sabhaFormDialog = false;
       })
       .addCase(updateSabha.rejected, (state, action) => {
+        state.error = action.payload as string;
+      });
+
+    //#region delete sabha
+    builder
+      .addCase(deleteSabha.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(deleteSabha.fulfilled, (state, action) => {
+        const deletedId = action.payload;
+        const index = state.sabhaList.findIndex(
+          (sabha) => sabha.id === deletedId,
+        );
+        if (index !== -1) {
+          state.sabhaList.splice(index, 1);
+          state.totalSabha = Math.max(0, state.totalSabha - 1);
+        }
+      })
+      .addCase(deleteSabha.rejected, (state, action) => {
         state.error = action.payload as string;
       });
   },

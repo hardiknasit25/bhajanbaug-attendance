@@ -13,7 +13,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { useSabha } from "~/hooks/useSabha";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 function EventCard({ sabha }: { sabha: SabhaData }) {
   const navigate = useNavigate();
@@ -23,9 +23,10 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
   const totalAbsents = totalUsers - totalPresents;
   const attendancePercentage =
     totalUsers > 0 ? Math.round((totalPresents / totalUsers) * 100) : 0;
-  const { startSabha, openSabhaFormDialog } = useSabha();
+  const { startSabha, openSabhaFormDialog, deleteSabha } = useSabha();
 
   const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   return (
     <div
       className={cn(
@@ -61,7 +62,23 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
 
         {/* Start Button */}
         <div className="flex justify-center items-center gap-4">
-          {status === "upcoming" && <Pencil size={16} />}
+          {status === "upcoming" && (
+            <>
+              <Pencil size={16} />
+              <button
+                type="button"
+                aria-label="Delete sabha"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setDeleteOpen(true);
+                }}
+                className="text-redTextColor z-20"
+              >
+                <Trash2 size={16} />
+              </button>
+            </>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -134,6 +151,33 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
               }}
             >
               Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Sabha?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{sabha?.title}"? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row justify-center items-center gap-2">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+
+            <Button
+              className="bg-red-500 hover:bg-red-600"
+              onClick={() => {
+                deleteSabha(sabha.id);
+                setDeleteOpen(false);
+              }}
+            >
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
