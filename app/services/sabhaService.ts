@@ -109,8 +109,19 @@ export const sabhaService = {
       const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.BASE}`, {
         title,
         sabha_type: sabhaType,
-        sabha_date: new Date().toISOString(),
       });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  //#region delete sabha
+  deleteSabha: async (sabhaId: number) => {
+    try {
+      const response = await axiosInstance.delete(
+        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`,
+      );
       return response.data;
     } catch (error) {
       throw error;
