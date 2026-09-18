@@ -9,8 +9,7 @@ import type { CommonParams } from "~/types/common.interface";
 import type { MemberData } from "~/types/members.interface";
 import type { SabhaData } from "~/types/sabha.interface";
 import { filterMembers } from "~/utils/filterMembers";
-import { localJsonStorageService } from "~/lib/localStorage";
-import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
+import { queueAbsent, queuePresent } from "~/utils/pendingAttendance";
 import { setSearchText } from "./memberSlice";
 import type { SabhaType } from "~/components/forms/SabhaForm";
 
@@ -230,24 +229,8 @@ const sabhaSlice = createSlice({
         (member) => member.id === userId,
       );
 
-      // 2. LocalStorage updates
-      let presentUsers =
-        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-
-      let absentUsers =
-        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-      // Add to present if not exists
-      if (!presentUsers.includes(userId)) {
-        presentUsers.push(userId);
-      }
-
-      // Remove from absent if exists
-      absentUsers = absentUsers.filter((u) => u !== userId);
-
-      // Save back
-      localJsonStorageService.setItem(PRESENT_MEMBER, presentUsers);
-      localJsonStorageService.setItem(ABSENT_MEMBER, absentUsers);
+      // 2. Queue the mark for the next sync (in memory; flushed on a debounce).
+      queuePresent(userId);
 
       if (findUser) {
         // 2. Update state only if currently marked absent
@@ -271,24 +254,8 @@ const sabhaSlice = createSlice({
         (member) => member.id === userId,
       );
 
-      // 2. LocalStorage updates
-      let absentUsers =
-        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-      let presentUsers =
-        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-
-      // Add to absent if not exists
-      if (!absentUsers.includes(userId)) {
-        absentUsers.push(userId);
-      }
-
-      // Remove from present if exists
-      presentUsers = presentUsers.filter((u) => u !== userId);
-
-      // Save back
-      localJsonStorageService.setItem(ABSENT_MEMBER, absentUsers);
-      localJsonStorageService.setItem(PRESENT_MEMBER, presentUsers);
+      // 2. Queue the mark for the next sync (in memory; flushed on a debounce).
+      queueAbsent(userId);
 
       if (findUser) {
         // 2. Update state if currently marked present or not marked

@@ -8,6 +8,7 @@ import {
 import CircularProgress from "./CircularProgress";
 import MemberListCard from "./MemberListCard";
 import { Download, QrCode, Share2 } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
 import { cn } from "~/lib/utils";
 import type { PoshakGroupData } from "~/types/members.interface";
 
@@ -18,6 +19,7 @@ function GroupAccordionMember({
   showDownload,
   onDownloadGroup,
   onShareGroup,
+  onShareGroupImage,
 }: {
   groupData: PoshakGroupData[];
   from: "report" | "members";
@@ -27,6 +29,9 @@ function GroupAccordionMember({
   // When provided (report tab), shows a "Share to WhatsApp" icon per group that
   // hands the group's Excel to the device share sheet.
   onShareGroup?: (groupId: number | null, leaderName: string) => void;
+  // When provided, shows a WhatsApp icon that downloads the group's member list
+  // as a themed PNG image (to then attach in WhatsApp).
+  onShareGroupImage?: (group: any, leaderName: string) => void;
 }) {
   return (
     <div className="h-full w-full overflow-auto">
@@ -86,6 +91,20 @@ function GroupAccordionMember({
                         strokeWidth={2}
                         value={groupTotalPercentage}
                       />
+                      {onShareGroupImage && (
+                        <WhatsAppIcon
+                          size={20}
+                          role="button"
+                          aria-label="Download group member list as an image for WhatsApp"
+                          className="text-[#25D366] cursor-pointer"
+                          onClick={(e) => {
+                            // Don't toggle the accordion when downloading.
+                            e.stopPropagation();
+                            e.preventDefault();
+                            onShareGroupImage(group, poshakLeaderName);
+                          }}
+                        />
+                      )}
                       {onShareGroup && (
                         <Share2
                           size={20}
@@ -122,6 +141,7 @@ function GroupAccordionMember({
                     </div>
                   )}
 
+                  {/* QR feature hidden from the UI (kept for future use).
                   {from === "members" && showDownload && (
                     <QrCode
                       size={20}
@@ -137,6 +157,7 @@ function GroupAccordionMember({
                       }}
                     />
                   )}
+                  */}
                 </div>
               </AccordionTrigger>
 

@@ -68,6 +68,7 @@ function MemberDetails() {
         iconName: "ArrowLeft",
         children: (
           <div className="flex justify-center items-center gap-4 pr-2">
+            {/* QR feature hidden from the UI (kept for future use).
             <MemberQrDialog
               memberId={Number(memberId)}
               memberName={
@@ -80,6 +81,7 @@ function MemberDetails() {
               smkNo={selectedMember?.smk_no}
               mobile={selectedMember?.mobile}
             />
+            */}
             <ChartColumn
               size={18}
               onClick={() => navigate(`/members/report/${memberId}`)}

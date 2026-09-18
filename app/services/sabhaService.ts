@@ -1,8 +1,7 @@
 import type { SabhaType } from "~/components/forms/SabhaForm";
-import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
+import { getPendingAbsent, getPendingPresent } from "~/utils/pendingAttendance";
 import axiosInstance from "~/interceptor/interceptor";
 import { API_ENDPOINTS } from "~/lib/api-endpoints";
-import { localJsonStorageService } from "~/lib/localStorage";
 
 export const sabhaService = {
   //#region get all sabhas
@@ -46,10 +45,8 @@ export const sabhaService = {
   //#region sync sabha attendance by id
   syncSabhaAttendance: async (sabhaId: number) => {
     try {
-      const presentUserIds =
-        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-      const absentUserIds =
-        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+      const presentUserIds = getPendingPresent();
+      const absentUserIds = getPendingAbsent();
       const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.SYNC}`, {
         sabha_id: sabhaId,
         present_user_id: presentUserIds,

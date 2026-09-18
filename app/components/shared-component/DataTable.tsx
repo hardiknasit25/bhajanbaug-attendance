@@ -1,24 +1,16 @@
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  themeQuartz,
-  type ColDef,
-  type FilterChangedEvent,
-  type GridReadyEvent,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import { useCallback, useEffect, useState } from "react";
+import type { ColDef } from "ag-grid-community";
+import { lazy, Suspense, useEffect, useState, type ReactElement } from "react";
+import LoadingSpinner from "./LoadingSpinner";
+import type { DataTableGridProps } from "./DataTableGrid";
 
-// Register the (free) community feature set once for the whole app.
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-// Match the app look: same border radius / border color family as the cards.
-const appTheme = themeQuartz.withParams({
-  borderRadius: 8,
-  wrapperBorderRadius: 12,
-  headerBackgroundColor: "#f8f9fb",
-  headerFontWeight: 600,
-});
+// AG Grid (~1 MB minified) is split into its own chunk and fetched only once a
+// table is actually on screen, so the admin routes paint their header and
+// controls immediately instead of blocking on the grid.
+// `lazy()` erases the component's generic parameter, so it is restored here —
+// the runtime value is unchanged, this only keeps `rowData`/`columnDefs` in sync.
+const DataTableGrid = lazy(() => import("./DataTableGrid")) as unknown as <T>(
+  props: DataTableGridProps<T>,
+) => ReactElement;
 
 interface DataTableProps<T> {
   rowData: T[];
@@ -40,57 +32,17 @@ function DataTable<T>({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Restore the saved filter model once the grid is ready.
-  const onGridReady = useCallback(
-    (e: GridReadyEvent) => {
-      if (!stateKey) return;
-      try {
-        const saved = window.localStorage.getItem(`table-filters:${stateKey}`);
-        if (saved) e.api.setFilterModel(JSON.parse(saved));
-      } catch {
-        // corrupt/unavailable storage — start with no filters
-      }
-    },
-    [stateKey]
-  );
-
-  // Save the filter model on every change.
-  const onFilterChanged = useCallback(
-    (e: FilterChangedEvent) => {
-      if (!stateKey) return;
-      try {
-        window.localStorage.setItem(
-          `table-filters:${stateKey}`,
-          JSON.stringify(e.api.getFilterModel() ?? {})
-        );
-      } catch {
-        // storage unavailable — filters just won't survive navigation
-      }
-    },
-    [stateKey]
-  );
-
   if (!mounted) return null;
 
   return (
-    <div className="w-full">
-      <AgGridReact<T>
-        theme={appTheme}
+    <Suspense fallback={<LoadingSpinner />}>
+      <DataTableGrid<T>
         rowData={rowData}
         columnDefs={columnDefs}
-        defaultColDef={{
-          sortable: true,
-          resizable: true,
-          flex: 1,
-          minWidth: 90,
-        }}
-        domLayout="autoHeight"
         rowHeight={rowHeight}
-        suppressCellFocus
-        onGridReady={onGridReady}
-        onFilterChanged={onFilterChanged}
+        stateKey={stateKey}
       />
-    </div>
+    </Suspense>
   );
 }
 

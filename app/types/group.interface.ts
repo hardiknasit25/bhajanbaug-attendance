@@ -7,6 +7,8 @@ export interface GroupData {
   group_type: PoshakGroupType | string;
   poshak_leader_id: number;
   leader_name?: string | null;
+  // Poshak leader's mobile number — used to open their WhatsApp chat.
+  leader_mobile?: string | null;
   total_attendance?: number;
   status?: boolean;
 }

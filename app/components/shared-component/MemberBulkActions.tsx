@@ -173,6 +173,7 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
             <Download size={18} className="text-primaryColor" />
             <span>Export members</span>
           </button>
+          {/* QR feature hidden from the UI (kept for future use).
           <button
             type="button"
             onClick={handleDownloadQr}
@@ -181,6 +182,7 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
             <QrCode size={18} className="text-primaryColor" />
             <span>Download QR codes</span>
           </button>
+          */}
           {canCreate && (
             <button
               type="button"

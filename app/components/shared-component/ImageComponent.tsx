@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { FALLBACK_AVATAR_PLACEHOLDER } from "~/constant/constant";
 
 function ImageComponent({
@@ -10,49 +10,39 @@ function ImageComponent({
   alt: string;
   className?: string;
 }) {
-  const [imageState, setImageState] = useState({
-    loaded: false,
-    error: false,
-  });
+  const [errored, setErrored] = useState(false);
 
-  const handleLoad = () => {
-    setImageState((prev) => ({ ...prev, loaded: true }));
-  };
-
-  const handleError = () => {
-    setImageState((prev) => ({ ...prev, error: true }));
-  };
-
-  // Logic: Show placeholder if loading OR if there's an error OR if no API src provided
-  const showPlaceholder = !imageState.loaded || imageState.error || !src;
+  // NOTE: remote avatars are currently disabled (see `AVATARS_ENABLED`). Flip it
+  // to true to serve `src`; the img is lazy + async-decoded so a long list only
+  // pays for the rows actually on screen.
+  const showRemote = AVATARS_ENABLED && !!src && !errored;
 
   return (
     <div
       className={`relative overflow-hidden h-[65px] w-[65px] rounded-full border border-primaryColor ${className}`}
     >
-      {/* 1. Local Placeholder Image */}
-      {showPlaceholder && (
-        <img
-          src={FALLBACK_AVATAR_PLACEHOLDER}
-          alt={alt}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
+      <img
+        src={FALLBACK_AVATAR_PLACEHOLDER}
+        alt={alt}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
 
-      {/* 2. API Image (Hidden until loaded) */}
-      {src && !imageState.error && (
+      {showRemote && (
         <img
-          // src={src}
+          src={src!}
           alt={alt}
-          onLoad={handleLoad}
-          onError={handleError}
-          className={`h-full w-full object-cover transition-opacity duration-300 bg-slate-300 rounded-full ${
-            imageState.loaded ? "opacity-100" : "bg-gray-200"
-          }`}
+          loading="lazy"
+          decoding="async"
+          onError={() => setErrored(true)}
+          className="relative h-full w-full rounded-full object-cover"
         />
       )}
     </div>
   );
 }
 
-export default ImageComponent;
+// Remote member photos are turned off for now — every list row rendered a second
+// <img> with no src plus its own loading state, for a picture that never arrived.
+const AVATARS_ENABLED = false;
+
+export default memo(ImageComponent);

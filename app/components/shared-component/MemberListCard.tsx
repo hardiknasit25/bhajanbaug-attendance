@@ -1,6 +1,5 @@
 import { ChartColumn, Check, X } from "lucide-react";
-import { useRef } from "react";
-import MemberQrDialog from "./MemberQrDialog";
+import { memo, useRef } from "react";
 import type { MemberData } from "~/types/members.interface";
 import ImageComponent from "./ImageComponent";
 import { useNavigate } from "react-router";
@@ -9,8 +8,6 @@ import { Separator } from "../ui/separator";
 import { useAppDispatch } from "~/store/hooks";
 import { doMemberPresent, doMemberAbsent } from "~/store/slice/sabhaSlice";
 import type { SabhaData } from "~/types/sabha.interface";
-import { localJsonStorageService } from "~/lib/localStorage";
-import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
 
 function MemberListCard({
   member,
@@ -26,12 +23,6 @@ function MemberListCard({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const cardRef = useRef<HTMLDivElement>(null);
-
-  const memberName = `${member.first_name ?? ""} ${member.middle_name ?? ""} ${
-    member.last_name ?? ""
-  }`
-    .replace(/\s+/g, " ")
-    .trim();
 
   const handlePresentClick = (id: number) => {
     // Dispatch directly so each card does NOT subscribe to the whole sabha slice.
@@ -167,7 +158,7 @@ function MemberListCard({
         )}
       </div>
 
-      {/* Per-member QR preview + download (members list / poshak-group list). */}
+      {/* Per-member QR preview + download - hidden from the UI (kept for future use).
       {from === "members" && (
         <MemberQrDialog
           memberId={member.id}
@@ -178,6 +169,7 @@ function MemberListCard({
           className="shrink-0 self-center rounded-full p-2 text-primaryColor hover:bg-gray-100"
         />
       )}
+      */}
       <Separator
         orientation="vertical"
         className="absolute bg-borderColor/30 w-[95%] h-[1px] bottom-0 left-1/2 right-1/2 translate-x-[-50%]"
@@ -186,4 +178,7 @@ function MemberListCard({
   );
 }
 
-export default MemberListCard;
+// Memoised: the attendance list is long, and marking one member present changes
+// only that member's object (immer keeps the rest referentially equal), so every
+// other row can skip re-rendering entirely.
+export default memo(MemberListCard);

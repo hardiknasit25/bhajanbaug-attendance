@@ -13,7 +13,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { useSabha } from "~/hooks/useSabha";
-import { Pencil, Trash2 } from "lucide-react";
+import { CalendarDays, Check, ChevronRight, Pencil, Trash2, X } from "lucide-react";
 
 function EventCard({ sabha }: { sabha: SabhaData }) {
   const navigate = useNavigate();
@@ -49,19 +49,32 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
         navigate(`/sabha/attendance/${sabha.id}`);
       }}
     >
-      <div className="w-full flex items-center justify-between">
+      <div className="w-full flex items-center justify-between gap-3">
         {/* Content */}
-        <div className="flex flex-col flex-1 py-3">
+        <div className="flex flex-col flex-1 py-3 min-w-0">
           <div className="flex justify-start items-center gap-2">
-            <h2 className="font-semibold text-base text-textColor capitalize">
+            <h2 className="font-semibold text-base text-textColor capitalize truncate">
               {sabha?.title}
             </h2>
           </div>
-          <p className="text-sm text-textLightColor">{sabha?.sabha_date}</p>
+          <p className="text-sm text-textLightColor flex items-center gap-1.5">
+            {status === "completed" && <CalendarDays size={13} />}
+            {sabha?.sabha_date}
+          </p>
         </div>
 
         {/* Start Button */}
         <div className="flex justify-center items-center gap-4">
+          {status === "completed" && (
+            <div className="flex items-center gap-1">
+              <CircularProgress
+                size={52}
+                strokeWidth={5}
+                value={attendancePercentage}
+              />
+              <ChevronRight size={18} className="text-textLightColor" />
+            </div>
+          )}
           {status === "upcoming" && (
             <>
               <Pencil size={16} />
@@ -79,49 +92,49 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
               </button>
             </>
           )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              if (status === "completed" || status === "running") {
-                return navigate(`/sabha/attendance/${sabha.id}`);
-              }
-              setOpen(true);
-            }}
-            className={cn(
-              "block px-5 py-2 text-sm text-white font-medium rounded-full z-20",
-              status === "upcoming" && "bg-blue-500",
-              status === "completed" && "bg-green-500 cursor-not-allowed",
-              status === "running" && "bg-orange-500"
-            )}
-          >
-            {status === "upcoming"
-              ? "Start"
-              : status === "running"
-                ? "Join"
-                : "Completed"}
-          </button>
+          {status !== "completed" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (status === "running") {
+                  return navigate(`/sabha/attendance/${sabha.id}`);
+                }
+                setOpen(true);
+              }}
+              className={cn(
+                "block px-5 py-2 text-sm text-white font-medium rounded-full z-20",
+                status === "upcoming" && "bg-blue-500",
+                status === "running" && "bg-orange-500"
+              )}
+            >
+              {status === "upcoming" ? "Start" : "Join"}
+            </button>
+          )}
         </div>
       </div>
 
       {status === "completed" && (
-        <div className="w-full flex justify-around items-center py-2">
-          <div className="flex flex-col justify-center items-center">
-            <span className="text-greenTextColor text-2xl">
-              {totalPresents}
-            </span>
-            <span className="text-greenTextColor text-sm">Presents</span>
-          </div>
-          <div className="flex flex-col justify-center items-center gap-1">
-            <span className="text-redTextColor text-2xl">{totalAbsents}</span>
-            <span className="text-redTextColor text-sm">Absents</span>
-          </div>
-          <div className="flex flex-col justify-center items-center gap-1">
-            <CircularProgress
-              size={50}
-              strokeWidth={4}
-              value={attendancePercentage}
+        <div className="w-full flex flex-col gap-2 pb-3">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-red-500/20">
+            <div
+              className="h-full rounded-full bg-green-500 transition-all duration-500"
+              style={{ width: `${attendancePercentage}%` }}
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-greenTextColor">
+              <Check size={12} strokeWidth={3} />
+              {totalPresents} Present
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-redTextColor">
+              <X size={12} strokeWidth={3} />
+              {totalAbsents} Absent
+            </span>
+            <span className="ml-auto text-xs text-textLightColor">
+              {totalUsers} total
+            </span>
           </div>
         </div>
       )}

@@ -24,9 +24,13 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
   },
+  // Only the weights the UI actually uses. The app previously pulled all 18
+  // Poppins weights (upright + italic) plus Inter and Baloo Bhai 2, neither of
+  // which is referenced anywhere — several hundred KB of blocking font payload
+  // on every load, most of it never drawn.
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Baloo+Bhai+2:wght@400..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap",
   },
 ];
 

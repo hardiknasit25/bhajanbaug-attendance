@@ -7,7 +7,7 @@ import {
 } from "react-router";
 import { Virtuoso } from "react-virtuoso";
 import MemberBulkActions from "~/components/shared-component/MemberBulkActions";
-import GroupAccordionMember from "~/components/shared-component/GroupAccordionMember";
+import GroupMemberCards from "~/components/shared-component/GroupMemberCards";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
@@ -198,7 +198,7 @@ export default function Members() {
           No members found
         </div>
       ) : (
-        <GroupAccordionMember
+        <GroupMemberCards
           groupData={filteredMembersByPoshakGroups}
           from="members"
           showDownload={true}

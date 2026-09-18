@@ -7,7 +7,7 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   redirect,
   useLoaderData,
@@ -20,7 +20,6 @@ import { Virtuoso } from "react-virtuoso";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
-import QrScanner from "~/components/shared-component/QrScanner";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -35,20 +34,25 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import {
-  ABSENT_MEMBER,
   MEMBER_QR_PREFIX,
-  PRESENT_MEMBER,
   SCAN_RESULT_VISIBLE_SECONDS,
 } from "~/constant/constant";
 import { useMembers } from "~/hooks/useMembers";
 import { useSabha } from "~/hooks/useSabha";
-import { localJsonStorageService } from "~/lib/localStorage";
+import {
+  clearPendingAttendance,
+  hasPendingAttendance,
+} from "~/utils/pendingAttendance";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 import {
   playErrorBuzzer,
   playSuccessSound,
   primeAudio,
 } from "~/utils/sound";
+
+// The scanner pulls in html5-qrcode (a few hundred KB) and only runs while the
+// scan dialog is open, so it is split out of the attendance route's bundle.
+const QrScanner = lazy(() => import("~/components/shared-component/QrScanner"));
 
 export function meta({}: MetaArgs) {
   return [
@@ -218,13 +222,9 @@ export default function EventAttendance() {
   };
 
   const checkPendingChanges = () => {
-    const present =
-      localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-    const absent =
-      localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-    setHasPendingChanges(present.length > 0 || absent.length > 0);
-    return present.length > 0 || absent.length > 0;
+    const pending = hasPendingAttendance();
+    setHasPendingChanges(pending);
+    return pending;
   };
 
   const openDialog = (
@@ -242,8 +242,7 @@ export default function EventAttendance() {
       return;
     }
 
-    localJsonStorageService.setItem(PRESENT_MEMBER, []);
-    localJsonStorageService.setItem(ABSENT_MEMBER, []);
+    clearPendingAttendance();
 
     fetchSabhaById(Number(sabhaId), userFilter, selectedGroupId);
 
@@ -376,8 +375,7 @@ export default function EventAttendance() {
 
             const res = await syncSabhaAttendance(Number(sabhaId));
             if (res) {
-              localJsonStorageService.setItem(PRESENT_MEMBER, []);
-              localJsonStorageService.setItem(ABSENT_MEMBER, []);
+              clearPendingAttendance();
 
               navigate("/sabha"); // Now allow back navigation
             }
@@ -410,8 +408,7 @@ export default function EventAttendance() {
     try {
       const res = await syncSabhaAttendance(Number(sabhaId));
       if (res) {
-        localJsonStorageService.setItem(PRESENT_MEMBER, []);
-        localJsonStorageService.setItem(ABSENT_MEMBER, []);
+        clearPendingAttendance();
       }
     } catch (error) {
       console.error("Sync failed during unmount:", error);
@@ -420,12 +417,7 @@ export default function EventAttendance() {
 
   useEffect(() => {
     return () => {
-      const present =
-        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-      const absent =
-        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-      if (present.length || absent.length) {
+      if (hasPendingAttendance()) {
         (async () => {
           await syncAttendance();
           navigate("/sabha");
@@ -448,11 +440,9 @@ export default function EventAttendance() {
             >
               <RotateCcw size={22} />
 
-              {((
-                localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) ?? []
-              ).length > 0 ||
-                (localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) ?? [])
-                  .length > 0) && (
+              {/* O(1) in-memory read — this used to JSON.parse both queues on
+                  every render of the screen. */}
+              {hasPendingAttendance() && (
                 <span className="absolute -top-0 right-0 w-2 h-2 rounded-full bg-red-500"></span>
               )}
             </div>
@@ -465,13 +455,14 @@ export default function EventAttendance() {
               />
             )}
 
-            {/* Scan QR to mark present */}
+            {/* Scan QR to mark present - hidden from the UI (kept for future use).
             <ScanLine
               size={22}
               onClick={openScanner}
               className="cursor-pointer"
               aria-label="Scan QR code"
             />
+            */}
 
             {/* Group-wise filter */}
             <Popover
@@ -693,7 +684,17 @@ export default function EventAttendance() {
           </DialogHeader>
 
           {/* Mounting only while open starts/stops the camera with the dialog. */}
-          {scanOpen && <QrScanner onScan={handleQrDecoded} />}
+          {scanOpen && (
+            <Suspense
+              fallback={
+                <p className="py-6 text-center text-sm text-textLightColor">
+                  Starting camera…
+                </p>
+              }
+            >
+              <QrScanner onScan={handleQrDecoded} />
+            </Suspense>
+          )}
 
           {/* Simple result message shown below the scanner. */}
           {scanResult && (

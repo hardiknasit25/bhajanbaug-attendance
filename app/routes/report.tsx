@@ -1,5 +1,5 @@
 import { Download, EllipsisVertical } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   redirect,
   useSearchParams,
@@ -8,7 +8,7 @@ import {
 } from "react-router";
 import { Virtuoso } from "react-virtuoso";
 import EventCard from "~/components/shared-component/EventCard";
-import GroupAccordionMember from "~/components/shared-component/GroupAccordionMember";
+import GroupMemberCards from "~/components/shared-component/GroupMemberCards";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
@@ -37,8 +37,14 @@ import { useSabha } from "~/hooks/useSabha";
 import { useMyPermissions } from "~/hooks/usePermissions";
 import axiosInstance from "~/interceptor/interceptor";
 import { sabhaService } from "~/services/sabhaService";
+import { groupService } from "~/services/groupService";
 import type { filterType } from "~/services/reportService";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
+import { buildGroupReportImage } from "~/utils/groupReportImage";
+import {
+  buildWhatsAppReportMessage,
+  toWhatsAppNumber,
+} from "~/constant/whatsappReportMessage";
 
 export function meta({}: MetaArgs) {
   return [
@@ -86,6 +92,12 @@ export default function Report() {
   } | null>(null);
   // Transient note shown when the device can't share files (falls back to download).
   const [shareNote, setShareNote] = useState<string | null>(null);
+  // group_id -> poshak leader mobile, from GET /poshak-group. The report API
+  // is about attendance, so the leader's contact details are read from the
+  // poshak-group info instead.
+  const [leaderMobiles, setLeaderMobiles] = useState<Record<number, string>>(
+    {},
+  );
 
   const {
     loading,
@@ -356,6 +368,180 @@ export default function Report() {
     downloadReportBlob(data, filename);
     noteDownloadedFallback();
   };
+
+  // Dates of the sabhas the current report covers, used for the image header.
+  // Derived from the already-loaded completed-sabha list, so no extra API call:
+  //  - explicit selection -> exactly those sabhas' dates
+  //  - duration filters   -> every one of them is a "most recent window", so the
+  //                          `sabhaCount` newest completed sabhas are the ones
+  //                          the backend counted.
+  const reportSabhaDates = useMemo(() => {
+    const dated = completedSabhas.filter((s) => !!s.sabha_date);
+    if (dated.length === 0) return [];
+    const sorted = [...dated].sort(
+      (a, b) =>
+        new Date(a.sabha_date as string).getTime() -
+        new Date(b.sabha_date as string).getTime(),
+    );
+    if (appliedSabhaIds.length > 0) {
+      return sorted
+        .filter((s) => appliedSabhaIds.includes(s.id))
+        .map((s) => s.sabha_date as string);
+    }
+    return sabhaCount > 0
+      ? sorted.slice(-sabhaCount).map((s) => s.sabha_date as string)
+      : [];
+  }, [completedSabhas, appliedSabhaIds, sabhaCount]);
+
+  // Text used for the {{date}} placeholder in the WhatsApp message:
+  // a single sabha date, or "from - to" when the report spans several.
+  const whatsAppDateText = useMemo(() => {
+    const fmt = (d: string) => {
+      const parsed = new Date(d);
+      return Number.isNaN(parsed.getTime())
+        ? ""
+        : parsed.toLocaleDateString("en-GB"); // dd/mm/yyyy
+    };
+    if (reportSabhaDates.length === 0) return "";
+    const first = fmt(reportSabhaDates[0]);
+    const last = fmt(reportSabhaDates[reportSabhaDates.length - 1]);
+    if (!first) return "";
+    return !last || first === last ? first : `${first} - ${last}`;
+  }, [reportSabhaDates]);
+
+  // Download a group's member list as a themed PNG (WhatsApp icon). Rendered on
+  // the client from the data already on screen, so it needs no extra API call.
+  // The image lands in the user's downloads; they attach it in WhatsApp.
+  const handleGroupImageShare = async (group: any, leaderName: string) => {
+    const fallbackName =
+      group?.group_id == null ? "No Group" : `group_${group.group_id}`;
+    const safeName =
+      (leaderName || fallbackName)
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .replace(/\s+/g, " ")
+        .trim() || fallbackName;
+    const filename = `${safeName}.png`;
+
+    let blob: Blob;
+    try {
+      blob = await buildGroupReportImage({
+        leaderName: leaderName || fallbackName,
+        groupName: group?.group_name ?? null,
+        members: group?.users ?? [],
+        totalSabha: sabhaCount,
+        sabhaDates: reportSabhaDates,
+      });
+    } catch (error) {
+      console.error("Failed to build group report image", error);
+      setShareNote("Couldn't create the image. Please try again.");
+      setTimeout(() => setShareNote(null), 5000);
+      return;
+    }
+
+    downloadReportBlob(blob, filename);
+
+    // Then open the poshak leader's WhatsApp chat with the message pre-filled.
+    // WhatsApp's click-to-chat link can only carry text, so the user attaches
+    // the image (just downloaded) from their gallery before sending.
+    // Prefer the number from the poshak-group info; fall back to whatever the
+    // report response carried, so a slow/failed group fetch still works.
+    const groupId = group?.group_id != null ? Number(group.group_id) : null;
+    const waNumber = toWhatsAppNumber(
+      (groupId != null ? leaderMobiles[groupId] : null) ??
+        group?.leader_details?.mobile,
+    );
+    if (!waNumber) {
+      setShareNote(
+        "Image downloaded. This poshak leader has no mobile number saved, so open WhatsApp and attach it manually.",
+      );
+      setTimeout(() => setShareNote(null), 6000);
+      return;
+    }
+
+    const message = buildWhatsAppReportMessage({
+      date: whatsAppDateText,
+      leaderName: leaderName || fallbackName,
+      groupName: group?.group_name ?? "",
+      totalMembers: group?.users?.length ?? 0,
+      totalSabha: sabhaCount,
+      presentTotal: (group?.users ?? []).reduce(
+        (acc: number, u: any) => acc + (Number(u?.total_present) || 0),
+        0,
+      ),
+      percent:
+        group?.users?.length && sabhaCount
+          ? Math.round(
+              ((group.users as any[]).reduce(
+                (acc, u) => acc + (Number(u?.total_present) || 0),
+                0,
+              ) /
+                (group.users.length * sabhaCount)) *
+                100,
+            )
+          : 0,
+    });
+
+    const encoded = encodeURIComponent(message);
+    // wa.me is a real web page: opening it leaves a page behind that the user
+    // has to dismiss on the way back. The whatsapp:// scheme is handled by the
+    // OS instead, so the app switches straight to WhatsApp and this screen stays
+    // exactly where it was — nothing to go "back" from.
+    const waAppUrl = `whatsapp://send?phone=${waNumber}&text=${encoded}`;
+    const waWebUrl = `https://wa.me/${waNumber}?text=${encoded}`;
+
+    setShareNote("Image downloaded. Attach it in the WhatsApp chat to send.");
+    setTimeout(() => setShareNote(null), 6000);
+
+    const isMobile =
+      typeof navigator !== "undefined" &&
+      /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    if (!isMobile) {
+      // Desktop has no WhatsApp scheme handler — open WhatsApp Web in a new tab.
+      // Popup blockers can reject window.open once the await above has consumed
+      // the click's user activation, so fall back to navigating this tab.
+      const opened = window.open(waWebUrl, "_blank", "noopener,noreferrer");
+      if (!opened) window.location.href = waWebUrl;
+      return;
+    }
+
+    // Hand off to the installed app. If WhatsApp isn't installed the scheme
+    // resolves to nothing and we stay visible, so after a short grace period
+    // fall back to wa.me rather than leaving the user with no feedback.
+    let handedOff = false;
+    const markHandedOff = () => {
+      if (document.hidden) handedOff = true;
+    };
+    document.addEventListener("visibilitychange", markHandedOff);
+    window.location.href = waAppUrl;
+    setTimeout(() => {
+      document.removeEventListener("visibilitychange", markHandedOff);
+      if (!handedOff && !document.hidden) window.location.href = waWebUrl;
+    }, 1500);
+  };
+
+  // Load the poshak groups once, purely to map each group to its leader's
+  // mobile number for the WhatsApp hand-off. A failure here is not fatal: the
+  // image still downloads, only the chat cannot be opened automatically.
+  useEffect(() => {
+    (async () => {
+      try {
+        const res: any = await groupService.getGroups();
+        const rows = Array.isArray(res?.data)
+          ? res.data
+          : (res?.data?.rows ?? []);
+        const map: Record<number, string> = {};
+        rows.forEach((g: any) => {
+          if (g?.id != null && g?.leader_mobile) {
+            map[Number(g.id)] = String(g.leader_mobile);
+          }
+        });
+        setLeaderMobiles(map);
+      } catch {
+        setLeaderMobiles({});
+      }
+    })();
+  }, []);
 
   // Load the completed-sabha list once (for the multi-select filter in the drawer).
   useEffect(() => {
@@ -682,13 +868,14 @@ export default function Report() {
               {loading ? (
                 <LoadingSpinner />
               ) : (
-                <GroupAccordionMember
+                <GroupMemberCards
                   groupData={filteredMembersByPoshakGroups}
                   from="report"
                   totalSabha={sabhaCount}
                   showDownload={true}
                   onDownloadGroup={handleGroupDownload}
                   onShareGroup={handleGroupShare}
+                  onShareGroupImage={handleGroupImageShare}
                 />
               )}
             </TabsContent>
