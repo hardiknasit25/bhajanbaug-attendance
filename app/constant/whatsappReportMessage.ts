@@ -30,9 +30,8 @@
 
 export const WHATSAPP_REPORT_MESSAGE = `🙏 જય સ્વામિનારાયણ 🙏
 
-🚨REPORT🚨
-
-📅 યુવા સભા તારીખ: *{{date}}*`;
+📅 Yuva Sabha Report
+Date:  *{{date}}* `;
 
 // Default country code prefixed to 10-digit mobile numbers for wa.me links.
 export const WHATSAPP_COUNTRY_CODE = "91";
