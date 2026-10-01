@@ -7,7 +7,7 @@ import {
 } from "../ui/accordion";
 import CircularProgress from "./CircularProgress";
 import MemberListCard from "./MemberListCard";
-import { Download, QrCode, Share2 } from "lucide-react";
+import { Download, QrCode } from "lucide-react";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { cn } from "~/lib/utils";
 import type { PoshakGroupData } from "~/types/members.interface";
@@ -18,7 +18,6 @@ function GroupAccordionMember({
   totalSabha,
   showDownload,
   onDownloadGroup,
-  onShareGroup,
   onShareGroupImage,
 }: {
   groupData: PoshakGroupData[];
@@ -26,9 +25,6 @@ function GroupAccordionMember({
   totalSabha?: number;
   showDownload?: boolean;
   onDownloadGroup?: (groupId: number | null, leaderName: string) => void;
-  // When provided (report tab), shows a "Share to WhatsApp" icon per group that
-  // hands the group's Excel to the device share sheet.
-  onShareGroup?: (groupId: number | null, leaderName: string) => void;
   // When provided, shows a WhatsApp icon that downloads the group's member list
   // as a themed PNG image (to then attach in WhatsApp).
   onShareGroupImage?: (group: any, leaderName: string) => void;
@@ -102,21 +98,6 @@ function GroupAccordionMember({
                             e.stopPropagation();
                             e.preventDefault();
                             onShareGroupImage(group, poshakLeaderName);
-                          }}
-                        />
-                      )}
-                      {onShareGroup && (
-                        <Share2
-                          size={20}
-                          role="button"
-                          aria-label="Share group report to WhatsApp"
-                          className="text-green-600 cursor-pointer"
-                          onClick={(e) => {
-                            // Don't toggle the accordion when sharing.
-                            e.stopPropagation();
-                            e.preventDefault();
-                            // group_id is null for the "Others" (no-group) bucket.
-                            onShareGroup(group.group_id ?? null, poshakLeaderName);
                           }}
                         />
                       )}

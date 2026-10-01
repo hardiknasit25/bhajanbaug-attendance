@@ -1,9 +1,10 @@
-import { ChevronDown, Download, MoreVertical, Share2 } from "lucide-react";
+import { ChevronDown, Download, MoreVertical } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import CircularProgress from "./CircularProgress";
 import MemberListCard from "./MemberListCard";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Spinner } from "../ui/spinner";
 import { cn } from "~/lib/utils";
 import type { PoshakGroupData } from "~/types/members.interface";
 
@@ -11,6 +12,7 @@ type GroupAction = {
   key: string;
   label: string;
   icon: ReactNode;
+  disabled?: boolean;
   onSelect: () => void;
 };
 
@@ -43,11 +45,12 @@ function GroupActionsMenu({
           <button
             key={action.key}
             type="button"
+            disabled={action.disabled}
             onClick={() => {
               setOpen(false);
               action.onSelect();
             }}
-            className="w-full flex items-center gap-3 rounded-sm px-3 py-2 text-left text-sm text-textColor hover:bg-gray-100"
+            className="w-full flex items-center gap-3 rounded-sm px-3 py-2 text-left text-sm text-textColor hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-transparent"
           >
             {action.icon}
             <span>{action.label}</span>
@@ -71,20 +74,19 @@ function GroupMemberCards({
   totalSabha,
   showDownload,
   onDownloadGroup,
-  onShareGroup,
   onShareGroupImage,
+  sendingGroupIds,
 }: {
   groupData: PoshakGroupData[];
   from: "report" | "members";
   totalSabha?: number;
   showDownload?: boolean;
   onDownloadGroup?: (groupId: number | null, leaderName: string) => void;
-  // When provided (report tab), adds a "Share report to WhatsApp" action that
-  // hands the group's Excel to the device share sheet.
-  onShareGroup?: (groupId: number | null, leaderName: string) => void;
-  // When provided, adds an action that downloads the group's member list as a
-  // themed PNG image (to then attach in WhatsApp).
-  onShareGroupImage?: (group: any, leaderName: string) => void;
+  // When provided, adds a "Share member list image" action that has the backend
+  // render the group's member list and send it to the Poshak Leader on WhatsApp.
+  onShareGroupImage?: (group: PoshakGroupData, leaderName: string) => void;
+  // Groups whose report is being sent right now (action disabled meanwhile).
+  sendingGroupIds?: ReadonlySet<number>;
 }) {
   // Open cards, keyed by group id — so open-state stays attached to the right
   // group when the list is filtered, and survives re-renders.
@@ -128,30 +130,26 @@ function GroupMemberCards({
           const isOpen = openGroups.has(groupKey);
           // group_id is null for the "Others" (no-group) bucket.
           const groupId = group.group_id ?? null;
+          const isSending = groupId != null && !!sendingGroupIds?.has(groupId);
 
           const actions: GroupAction[] = [];
           if (from === "report") {
-            if (onShareGroupImage)
+            // Only real groups have a Poshak Leader to send to.
+            if (onShareGroupImage && groupId != null)
               actions.push({
                 key: "share-image",
-                label: "Share member list image",
-                icon: (
+                label: isSending ? "Sending..." : "Share member list image",
+                icon: isSending ? (
+                  <Spinner className="size-[18px] text-[#25D366]" />
+                ) : (
                   <WhatsAppIcon
                     size={18}
                     className="text-[#25D366]"
                     aria-hidden="true"
                   />
                 ),
+                disabled: isSending,
                 onSelect: () => onShareGroupImage(group, poshakLeaderName),
-              });
-            if (onShareGroup)
-              actions.push({
-                key: "share-report",
-                label: "Share report to WhatsApp",
-                icon: (
-                  <Share2 size={18} className="text-green-600" aria-hidden="true" />
-                ),
-                onSelect: () => onShareGroup(groupId, poshakLeaderName),
               });
             if (showDownload)
               actions.push({
@@ -211,6 +209,14 @@ function GroupMemberCards({
                 </button>
 
                 <div className="shrink-0 flex items-center gap-1">
+                  {isSending && (
+                    <span
+                      role="status"
+                      className="flex items-center gap-1 rounded-full bg-[#25D366]/15 px-2 py-0.5 text-[11px] font-medium text-green-800"
+                    >
+                      <Spinner className="size-3" /> Sending...
+                    </span>
+                  )}
                   {actions.length > 0 && (
                     <GroupActionsMenu
                       leaderName={poshakLeaderName}

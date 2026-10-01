@@ -33,6 +33,17 @@ export const API_ENDPOINTS = {
     BASE: "report",
     MEMBER_REPORT: "report/user",
     GROUP_REPORT: "report/group",
+    WHATSAPP_SEND: "report/whatsapp/send",
+    WHATSAPP_SEND_ALL: "report/whatsapp/send-all",
+    WHATSAPP_JOBS: "report/whatsapp/jobs",
+    WHATSAPP_LATEST_JOB: "report/whatsapp/jobs/latest",
+  },
+
+  WHATSAPP: {
+    STATUS: "whatsapp/status",
+    CONNECT: "whatsapp/connect",
+    LOGOUT: "whatsapp/logout",
+    CHANGE_NUMBER: "whatsapp/change-number",
   },
 
   GROUPS: {

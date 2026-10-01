@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { useNetworkProblem } from "~/hooks/useNetworkProblem";
 import { cn } from "~/lib/utils";
 
 type ToastType = "success" | "error";
@@ -32,6 +33,8 @@ const EXIT_MS = 200;
 export function Toaster() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Sit below the network banner instead of on top of it.
+  const bannerShown = useNetworkProblem() !== null;
 
   // Enter/exit are done with tailwindcss-animate utilities rather than
   // framer-motion. The Toaster is mounted in root.tsx, so framer-motion was
@@ -62,7 +65,12 @@ export function Toaster() {
   }, [dismiss]);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-4 z-[100] flex flex-col items-center gap-2 px-4">
+    <div
+      className={cn(
+        "pointer-events-none fixed inset-x-0 z-[100] flex flex-col items-center gap-2 px-4 transition-[top] duration-200",
+        bannerShown ? "top-14" : "top-4",
+      )}
+    >
       {toasts.map((t) => (
         <div
           key={t.id}

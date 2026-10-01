@@ -1,5 +1,5 @@
 import { Download, EllipsisVertical } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   redirect,
   useSearchParams,
@@ -12,7 +12,13 @@ import GroupMemberCards from "~/components/shared-component/GroupMemberCards";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
+import ReportSabhaBar from "~/components/shared-component/ReportSabhaBar";
+import ConfirmDialog from "~/components/shared-component/ConfirmDialog";
+import { toast } from "~/components/shared-component/Toaster";
+import WhatsAppBulkSendDialog from "~/components/shared-component/WhatsAppBulkSendDialog";
+import WhatsAppIcon from "~/components/shared-component/WhatsAppIcon";
 import { DialogClose } from "~/components/ui/dialog";
+import { Spinner } from "~/components/ui/spinner";
 import {
   Drawer,
   DrawerContent,
@@ -36,15 +42,16 @@ import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
 import { useMyPermissions } from "~/hooks/usePermissions";
 import axiosInstance from "~/interceptor/interceptor";
+import { useWhatsAppBulkSend } from "~/hooks/useWhatsAppBulkSend";
 import { sabhaService } from "~/services/sabhaService";
-import { groupService } from "~/services/groupService";
 import type { filterType } from "~/services/reportService";
-import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
-import { buildGroupReportImage } from "~/utils/groupReportImage";
 import {
-  buildWhatsAppReportMessage,
-  toWhatsAppNumber,
-} from "~/constant/whatsappReportMessage";
+  getApiErrorMessage,
+  whatsappService,
+} from "~/services/whatsappService";
+import type { PoshakGroupData } from "~/types/members.interface";
+import type { WhatsAppReportSelection } from "~/types/whatsapp.interface";
+import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
   return [
@@ -61,6 +68,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   return null;
+};
+
+// How a duration filter is described in the "send to all" confirmation.
+const FILTER_LABELS: Record<filterType, string> = {
+  lastSabha: "Latest sabha",
+  lastMonthAllSabha: "All sabhas of the last month",
+  lastThreeMonthsAllSabha: "All sabhas of the last 3 months",
+  lastSixMonthsAllSabha: "All sabhas of the last 6 months",
+  lastYearAllSabha: "All sabhas of the last year",
+  lastFourSabha: "Last 4 sabhas",
+  allSabhaWithDuration: "Sabhas in the selected duration",
 };
 
 // "all-members" + one tab per poshak group_type (poshak | sakshi | aatmiy) + completed.
@@ -90,14 +108,15 @@ export default function Report() {
     total: number;
     label: string;
   } | null>(null);
-  // Transient note shown when the device can't share files (falls back to download).
-  const [shareNote, setShareNote] = useState<string | null>(null);
-  // group_id -> poshak leader mobile, from GET /poshak-group. The report API
-  // is about attendance, so the leader's contact details are read from the
-  // poshak-group info instead.
-  const [leaderMobiles, setLeaderMobiles] = useState<Record<number, string>>(
-    {},
+  // Groups whose report image is being sent to WhatsApp right now. The ref
+  // blocks a double click before the state update re-renders the button.
+  const [sendingGroupIds, setSendingGroupIds] = useState<ReadonlySet<number>>(
+    new Set(),
   );
+  const sendingGroupIdsRef = useRef<Set<number>>(new Set());
+  // "Send to all Poshak Leaders": confirmation + progress dialogs.
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkProgressOpen, setBulkProgressOpen] = useState(false);
 
   const {
     loading,
@@ -106,6 +125,7 @@ export default function Report() {
     filteredMembersByPoshakGroups,
     groupReport,
     sabhaCount,
+    reportSabhas,
     fetchMembersReport,
     fetchGroupReport,
     setSearchText,
@@ -124,6 +144,10 @@ export default function Report() {
   const canAll = !myLoaded || can("all_members", "read");
   const canGroup = !myLoaded || can("poshak_group", "read");
   const canCompleted = !myLoaded || can("completed_sabha", "read");
+  // Sending reports from the linked WhatsApp account (POST => "create").
+  const canWhatsApp = myLoaded && can("whatsapp", "create");
+
+  const bulk = useWhatsAppBulkSend({ enabled: canWhatsApp });
   const resolveTab = (t: ReportTabs): ReportTabs => {
     if (t === "all-members" && canAll) return t;
     if (isGroupTypeTab(t) && canGroup) return t;
@@ -283,268 +307,86 @@ export default function Report() {
     }
   };
 
-  // Share a single group's Excel report to WhatsApp via the device share sheet.
-  // On phones this opens the native share menu with the .xlsx attached; the user
-  // picks WhatsApp and the poshak leader. When sharing isn't available (desktop,
-  // or a standalone PWA where navigator.share throws) it falls back to a download.
-  const XLSX_MIME =
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  // The report screen's current selection, sent with every WhatsApp request so
+  // the backend builds exactly this report: the explicit sabha selection when
+  // there is one, otherwise the duration filter — scoped to the active tab.
+  const whatsAppSelection: WhatsAppReportSelection = useMemo(
+    () => ({
+      ...(appliedSabhaIds.length > 0
+        ? { sabhaIds: appliedSabhaIds }
+        : { filter: selectedFilter }),
+      ...(activeGroupType ? { groupType: activeGroupType } : {}),
+    }),
+    [appliedSabhaIds, selectedFilter, activeGroupType],
+  );
 
-  const downloadReportBlob = (data: Blob, filename: string) => {
-    const url = window.URL.createObjectURL(data);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => window.URL.revokeObjectURL(url), 100);
-  };
-  const noteDownloadedFallback = () => {
-    setShareNote(
-      "Sharing isn't available here, so the report was downloaded. Open WhatsApp and attach it to send.",
-    );
-    setTimeout(() => setShareNote(null), 6000);
-  };
+  // Sabhas listed in the "send to all" confirmation.
+  const selectedSabhaLabels = useMemo(() => {
+    if (appliedSabhaIds.length === 0) return [FILTER_LABELS[selectedFilter]];
+    return completedSabhas
+      .filter((s) => appliedSabhaIds.includes(s.id))
+      .map((s) => (s.sabha_date ? `${s.title} (${s.sabha_date})` : s.title));
+  }, [appliedSabhaIds, completedSabhas, selectedFilter]);
 
-  const handleGroupShare = async (
-    groupId: number | null,
+  // Groups that have a Poshak Leader to send to (the "Others" bucket has none).
+  const leaderGroupCount = useMemo(
+    () => (groupReport || []).filter((g) => g.group_id != null).length,
+    [groupReport],
+  );
+
+  // Send one group's member list image to its Poshak Leader. The backend
+  // renders the image (single / multiple sabha layout) and sends it on WhatsApp.
+  const handleSendGroupReport = async (
+    group: PoshakGroupData,
     leaderName: string,
   ) => {
-    const filterParam = selectedFilter || "lastMonthAllSabha";
-    const groupParam = groupId == null ? "none" : String(groupId);
-    const fallbackName = groupId == null ? "No Group" : `group_${groupId}`;
-    const sabhaIdsParam =
-      appliedSabhaIds.length > 0
-        ? `&sabha_ids=${appliedSabhaIds.join(",")}`
-        : "";
-    const safeName =
-      (leaderName || fallbackName)
-        .replace(/[\\/:*?"<>|]/g, "_")
-        .replace(/\s+/g, " ")
-        .trim() || fallbackName;
-    const filename = `${safeName}.xlsx`;
+    const groupId = group?.group_id;
+    if (groupId == null || sendingGroupIdsRef.current.has(groupId)) return;
 
-    // 1. Generate the report. A failure here is a real error (not a share issue).
-    let data: Blob;
+    sendingGroupIdsRef.current.add(groupId);
+    setSendingGroupIds(new Set(sendingGroupIdsRef.current));
     try {
-      const response = await axiosInstance.get(
-        `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}${groupTypeParam}`,
-        { responseType: "blob" },
-      );
-      data = response.data as Blob;
-    } catch (error) {
-      console.error("Failed to generate group report", error);
-      setShareNote("Couldn't generate the report. Please try again.");
-      setTimeout(() => setShareNote(null), 5000);
-      return;
-    }
-
-    // 2. Try the native share sheet with the file attached.
-    const file = new File([data], filename, { type: XLSX_MIME });
-    const canShareFiles =
-      typeof navigator !== "undefined" &&
-      typeof navigator.canShare === "function" &&
-      navigator.canShare({ files: [file] });
-
-    if (canShareFiles) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: `${leaderName || fallbackName} — Attendance Report`,
-          text: `Poshak group attendance report: ${leaderName || fallbackName}`,
-        });
-        return; // shared successfully
-      } catch (error: any) {
-        // User dismissed the sheet — do nothing, don't download.
-        if (error?.name === "AbortError") return;
-        // Any other failure (e.g. PWA/iOS share throwing, lost user activation):
-        // fall through to the download fallback so the report isn't lost.
-        console.error("Share failed, falling back to download", error);
-      }
-    }
-
-    // 3. Fallback: download so the user can attach it in WhatsApp manually.
-    downloadReportBlob(data, filename);
-    noteDownloadedFallback();
-  };
-
-  // Dates of the sabhas the current report covers, used for the image header.
-  // Derived from the already-loaded completed-sabha list, so no extra API call:
-  //  - explicit selection -> exactly those sabhas' dates
-  //  - duration filters   -> every one of them is a "most recent window", so the
-  //                          `sabhaCount` newest completed sabhas are the ones
-  //                          the backend counted.
-  const reportSabhaDates = useMemo(() => {
-    const dated = completedSabhas.filter((s) => !!s.sabha_date);
-    if (dated.length === 0) return [];
-    const sorted = [...dated].sort(
-      (a, b) =>
-        new Date(a.sabha_date as string).getTime() -
-        new Date(b.sabha_date as string).getTime(),
-    );
-    if (appliedSabhaIds.length > 0) {
-      return sorted
-        .filter((s) => appliedSabhaIds.includes(s.id))
-        .map((s) => s.sabha_date as string);
-    }
-    return sabhaCount > 0
-      ? sorted.slice(-sabhaCount).map((s) => s.sabha_date as string)
-      : [];
-  }, [completedSabhas, appliedSabhaIds, sabhaCount]);
-
-  // Text used for the {{date}} placeholder in the WhatsApp message:
-  // a single sabha date, or "from - to" when the report spans several.
-  const whatsAppDateText = useMemo(() => {
-    const fmt = (d: string) => {
-      const parsed = new Date(d);
-      return Number.isNaN(parsed.getTime())
-        ? ""
-        : parsed.toLocaleDateString("en-GB"); // dd/mm/yyyy
-    };
-    if (reportSabhaDates.length === 0) return "";
-    const first = fmt(reportSabhaDates[0]);
-    const last = fmt(reportSabhaDates[reportSabhaDates.length - 1]);
-    if (!first) return "";
-    return !last || first === last ? first : `${first} - ${last}`;
-  }, [reportSabhaDates]);
-
-  // Download a group's member list as a themed PNG (WhatsApp icon). Rendered on
-  // the client from the data already on screen, so it needs no extra API call.
-  // The image lands in the user's downloads; they attach it in WhatsApp.
-  const handleGroupImageShare = async (group: any, leaderName: string) => {
-    const fallbackName =
-      group?.group_id == null ? "No Group" : `group_${group.group_id}`;
-    const safeName =
-      (leaderName || fallbackName)
-        .replace(/[\\/:*?"<>|]/g, "_")
-        .replace(/\s+/g, " ")
-        .trim() || fallbackName;
-    // Unique suffix so each click saves a new file instead of colliding with an
-    // earlier download of the same name (which makes the browser prompt again).
-    const uniqueId = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const filename = `${safeName}_${uniqueId}.png`;
-
-    let blob: Blob;
-    try {
-      blob = await buildGroupReportImage({
-        leaderName: leaderName || fallbackName,
-        groupName: group?.group_name ?? null,
-        members: group?.users ?? [],
-        totalSabha: sabhaCount,
-        sabhaDates: reportSabhaDates,
+      await whatsappService.sendGroupReport({
+        ...whatsAppSelection,
+        groupId,
+        poshakLeaderId: group.poshak_leader_id ?? undefined,
       });
+      toast.success(`✓ Report sent to ${leaderName}`);
     } catch (error) {
-      console.error("Failed to build group report image", error);
-      setShareNote("Couldn't create the image. Please try again.");
-      setTimeout(() => setShareNote(null), 5000);
-      return;
+      toast.error(getApiErrorMessage(error, "Failed to send report"));
+    } finally {
+      sendingGroupIdsRef.current.delete(groupId);
+      setSendingGroupIds(new Set(sendingGroupIdsRef.current));
     }
-
-    downloadReportBlob(blob, filename);
-
-    // Then open the poshak leader's WhatsApp chat with the message pre-filled.
-    // WhatsApp's click-to-chat link can only carry text, so the user attaches
-    // the image (just downloaded) from their gallery before sending.
-    // Prefer the number from the poshak-group info; fall back to whatever the
-    // report response carried, so a slow/failed group fetch still works.
-    const groupId = group?.group_id != null ? Number(group.group_id) : null;
-    const waNumber = toWhatsAppNumber(
-      (groupId != null ? leaderMobiles[groupId] : null) ??
-        group?.leader_details?.mobile,
-    );
-    if (!waNumber) {
-      setShareNote(
-        "Image downloaded. This poshak leader has no mobile number saved, so open WhatsApp and attach it manually.",
-      );
-      setTimeout(() => setShareNote(null), 6000);
-      return;
-    }
-
-    const message = buildWhatsAppReportMessage({
-      date: whatsAppDateText,
-      leaderName: leaderName || fallbackName,
-      groupName: group?.group_name ?? "",
-      totalMembers: group?.users?.length ?? 0,
-      totalSabha: sabhaCount,
-      presentTotal: (group?.users ?? []).reduce(
-        (acc: number, u: any) => acc + (Number(u?.total_present) || 0),
-        0,
-      ),
-      percent:
-        group?.users?.length && sabhaCount
-          ? Math.round(
-              ((group.users as any[]).reduce(
-                (acc, u) => acc + (Number(u?.total_present) || 0),
-                0,
-              ) /
-                (group.users.length * sabhaCount)) *
-                100,
-            )
-          : 0,
-    });
-
-    const encoded = encodeURIComponent(message);
-    // wa.me is a real web page: opening it leaves a page behind that the user
-    // has to dismiss on the way back. The whatsapp:// scheme is handled by the
-    // OS instead, so the app switches straight to WhatsApp and this screen stays
-    // exactly where it was — nothing to go "back" from.
-    const waAppUrl = `whatsapp://send?phone=${waNumber}&text=${encoded}`;
-    const waWebUrl = `https://wa.me/${waNumber}?text=${encoded}`;
-
-    setShareNote("Image downloaded. Attach it in the WhatsApp chat to send.");
-    setTimeout(() => setShareNote(null), 6000);
-
-    const isMobile =
-      typeof navigator !== "undefined" &&
-      /android|iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    if (!isMobile) {
-      // Desktop has no WhatsApp scheme handler — open WhatsApp Web in a new tab.
-      // Popup blockers can reject window.open once the await above has consumed
-      // the click's user activation, so fall back to navigating this tab.
-      const opened = window.open(waWebUrl, "_blank", "noopener,noreferrer");
-      if (!opened) window.location.href = waWebUrl;
-      return;
-    }
-
-    // Hand off to the installed app. If WhatsApp isn't installed the scheme
-    // resolves to nothing and we stay visible, so after a short grace period
-    // fall back to wa.me rather than leaving the user with no feedback.
-    let handedOff = false;
-    const markHandedOff = () => {
-      if (document.hidden) handedOff = true;
-    };
-    document.addEventListener("visibilitychange", markHandedOff);
-    window.location.href = waAppUrl;
-    setTimeout(() => {
-      document.removeEventListener("visibilitychange", markHandedOff);
-      if (!handedOff && !document.hidden) window.location.href = waWebUrl;
-    }, 1500);
   };
 
-  // Load the poshak groups once, purely to map each group to its leader's
-  // mobile number for the WhatsApp hand-off. A failure here is not fatal: the
-  // image still downloads, only the chat cannot be opened automatically.
-  useEffect(() => {
-    (async () => {
-      try {
-        const res: any = await groupService.getGroups();
-        const rows = Array.isArray(res?.data)
-          ? res.data
-          : (res?.data?.rows ?? []);
-        const map: Record<number, string> = {};
-        rows.forEach((g: any) => {
-          if (g?.id != null && g?.leader_mobile) {
-            map[Number(g.id)] = String(g.leader_mobile);
-          }
-        });
-        setLeaderMobiles(map);
-      } catch {
-        setLeaderMobiles({});
-      }
-    })();
-  }, []);
+  // Header WhatsApp button: reopen the progress of a running run, otherwise
+  // ask for confirmation first.
+  const handleBulkButtonClick = () => {
+    if (bulk.isRunning) {
+      setBulkProgressOpen(true);
+      return;
+    }
+    setBulkConfirmOpen(true);
+  };
+
+  const handleConfirmBulkSend = async () => {
+    try {
+      await bulk.start(whatsAppSelection);
+      setBulkConfirmOpen(false);
+      setBulkProgressOpen(true);
+    } catch (error: any) {
+      setBulkConfirmOpen(false);
+      toast.error(error?.message || "Couldn't start sending reports");
+    }
+  };
+
+  const canBulkSend = sabhaCount > 0 && leaderGroupCount > 0 && !loading;
+  const bulkButtonTitle = bulk.isRunning
+    ? "Sending reports — tap to see progress"
+    : sabhaCount === 0
+      ? "Select at least one Sabha before sending reports."
+      : "Send reports to all Poshak Leaders";
 
   // Load the completed-sabha list once (for the multi-select filter in the drawer).
   useEffect(() => {
@@ -619,6 +461,25 @@ export default function Report() {
         title: "Report",
         children: (
           <div className="flex justify-center items-center gap-4 pr-3">
+            {/* Send the selected report to every Poshak Leader on WhatsApp */}
+            {canWhatsApp && isGroupTypeTab(activeTab) && (
+              <button
+                type="button"
+                onClick={handleBulkButtonClick}
+                disabled={!bulk.isRunning && (!canBulkSend || bulk.starting)}
+                title={bulkButtonTitle}
+                aria-label={bulkButtonTitle}
+                className="relative disabled:opacity-40"
+              >
+                <WhatsAppIcon size={22} className="text-white" />
+                {bulk.isRunning && (
+                  <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-[#25D366]">
+                    <Spinner className="size-3 text-white" />
+                  </span>
+                )}
+              </button>
+            )}
+
             {isGroupTypeTab(activeTab) ? (
               <Popover open={dlMenuOpen} onOpenChange={setDlMenuOpen}>
                 <PopoverTrigger asChild>
@@ -770,13 +631,6 @@ export default function Report() {
         },
       }}
     >
-      {/* WhatsApp share fallback note */}
-      {shareNote && (
-        <div className="sticky top-0 z-30 border-b border-borderColor bg-amber-50 px-4 py-2 text-center text-sm text-amber-800">
-          {shareNote}
-        </div>
-      )}
-
       {/* Download Separate progress */}
       {sepProgress && (
         <div className="sticky top-0 z-30 bg-white border-b border-borderColor px-4 py-2">
@@ -821,6 +675,11 @@ export default function Report() {
             <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
           )}
         </TabsList>
+
+        {/* Which sabha(s) the report on screen is for */}
+        {activeTab !== "completed-sabha" && (canAll || canGroup) && (
+          <ReportSabhaBar sabhas={reportSabhas} loading={loading} />
+        )}
 
         {myLoaded && !canAll && !canGroup && !canCompleted && (
           <div className="mt-10 text-center text-textLightColor">
@@ -877,8 +736,10 @@ export default function Report() {
                   totalSabha={sabhaCount}
                   showDownload={true}
                   onDownloadGroup={handleGroupDownload}
-                  onShareGroup={handleGroupShare}
-                  onShareGroupImage={handleGroupImageShare}
+                  onShareGroupImage={
+                    canWhatsApp ? handleSendGroupReport : undefined
+                  }
+                  sendingGroupIds={sendingGroupIds}
                 />
               )}
             </TabsContent>
@@ -908,6 +769,44 @@ export default function Report() {
         </TabsContent>
         )}
       </Tabs>
+
+      {/* Send to all Poshak Leaders — confirmation */}
+      <ConfirmDialog
+        open={bulkConfirmOpen}
+        onOpenChange={setBulkConfirmOpen}
+        title="Send WhatsApp Reports?"
+        description={
+          <>
+            This will send reports to{" "}
+            <b>
+              {leaderGroupCount} Poshak{" "}
+              {leaderGroupCount === 1 ? "Leader" : "Leaders"}
+            </b>{" "}
+            for the selected Sabhas, one by one:
+          </>
+        }
+        confirmText="Send Reports"
+        loadingText="Starting…"
+        loading={bulk.starting}
+        onConfirm={handleConfirmBulkSend}
+      >
+        <ul className="max-h-40 overflow-y-auto rounded-lg border border-borderColor px-3 py-2 text-sm text-textColor">
+          {selectedSabhaLabels.map((label) => (
+            <li key={label} className="py-0.5">
+              {label}
+            </li>
+          ))}
+        </ul>
+      </ConfirmDialog>
+
+      {/* Send to all Poshak Leaders — live progress */}
+      <WhatsAppBulkSendDialog
+        open={bulkProgressOpen}
+        onOpenChange={setBulkProgressOpen}
+        job={bulk.job}
+        cancelling={bulk.cancelling}
+        onCancel={bulk.cancel}
+      />
     </LayoutWrapper>
   );
 }

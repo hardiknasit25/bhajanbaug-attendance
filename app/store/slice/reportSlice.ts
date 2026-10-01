@@ -8,11 +8,19 @@ import { reportService, type filterType } from "~/services/reportService";
 import type { MemberData, PoshakGroupData } from "~/types/members.interface";
 import { filterMembers } from "~/utils/filterMembers";
 
+// A sabha covered by the current report (shown on the report screen).
+export interface ReportSabha {
+  id: number;
+  title: string | null;
+  sabha_date: string | null;
+}
+
 interface ReportState {
   memberReport: MemberData[];
   groupReport: PoshakGroupData[];
   searchText: string;
   sabhaCount: number;
+  reportSabhas: ReportSabha[];
   loading: boolean;
 }
 
@@ -20,6 +28,7 @@ const initialState: ReportState = {
   memberReport: [],
   groupReport: [],
   sabhaCount: 0,
+  reportSabhas: [],
   searchText: "",
   loading: false,
 };
@@ -38,6 +47,7 @@ export const fetchMembersReport = createAsyncThunk(
       const response = await reportService.getMemberReport(filter, sabhaIds);
       return response.data as {
         sabha_count: number;
+        sabhas?: ReportSabha[];
         result: MemberData[];
       };
     } catch (error) {
@@ -58,6 +68,7 @@ export const fetchGroupReport = createAsyncThunk(
       );
       return response.data as {
         sabha_count: number;
+        sabhas?: ReportSabha[];
         groups: PoshakGroupData[];
       };
     } catch (error) {
@@ -93,6 +104,7 @@ const reportSlice = createSlice({
         state.loading = false;
         state.memberReport = action.payload.result;
         state.sabhaCount = action.payload.sabha_count;
+        state.reportSabhas = action.payload.sabhas ?? [];
       })
       .addCase(fetchMembersReport.rejected, (state) => {
         state.loading = false;
@@ -107,6 +119,7 @@ const reportSlice = createSlice({
         state.loading = false;
         state.groupReport = action.payload.groups;
         state.sabhaCount = action.payload.sabha_count;
+        state.reportSabhas = action.payload.sabhas ?? [];
       })
       .addCase(fetchGroupReport.rejected, (state) => {
         state.loading = false;
