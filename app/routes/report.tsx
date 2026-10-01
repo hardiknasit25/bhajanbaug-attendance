@@ -420,7 +420,10 @@ export default function Report() {
         .replace(/[\\/:*?"<>|]/g, "_")
         .replace(/\s+/g, " ")
         .trim() || fallbackName;
-    const filename = `${safeName}.png`;
+    // Unique suffix so each click saves a new file instead of colliding with an
+    // earlier download of the same name (which makes the browser prompt again).
+    const uniqueId = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const filename = `${safeName}_${uniqueId}.png`;
 
     let blob: Blob;
     try {
