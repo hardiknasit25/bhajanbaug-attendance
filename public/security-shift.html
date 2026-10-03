@@ -1,0 +1,3413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ભજન બાગ સેવા</title>
+<meta name="description" content="Daily Seva Message Generator for ભજન બાગ">
+<meta name="theme-color" content="#7A3E24">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%99%8F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =====================================================================
+   THEME
+   ===================================================================== */
+:root {
+    color-scheme: light;
+    --bg: #FFF8F0;
+    --surface: #FFFFFF;
+    --surface-2: #FBF1E6;
+    --border: #EADBC8;
+    --border-strong: #D6BFA3;
+    --text: #2A1A12;
+    --muted: #6B5646;
+    --primary: #7A3E24;
+    --primary-hover: #62301B;
+    --primary-soft: #F6E8DD;
+    --accent: #D97706;
+    --accent-text: #9A5204;
+    --accent-soft: #FEF3E2;
+    --accent-line: #F5D6A8;
+    --wa: #15803D;
+    --wa-hover: #106A31;
+    --danger: #B42318;
+    --danger-soft: #FDECEA;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(70, 35, 15, .06), 0 6px 18px rgba(70, 35, 15, .06);
+    --focus: 0 0 0 3px rgba(217, 119, 6, .5);
+    --font: "Noto Sans Gujarati", system-ui, -apple-system, "Segoe UI", Roboto, "Nirmala UI", sans-serif;
+    --copybar-space: 84px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+[hidden] { display: none !important; }
+h1, h2, h3, p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: none; box-shadow: var(--focus); }
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* =====================================================================
+   BUTTONS
+   ===================================================================== */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px; padding: 0 16px;
+    border-radius: 12px; border: 1px solid transparent;
+    font-weight: 600; font-size: 15px; line-height: 1.2;
+    text-decoration: none; cursor: pointer; white-space: nowrap;
+    background: var(--surface); color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-secondary { background: var(--surface); border-color: var(--border-strong); color: var(--primary); }
+.btn-secondary:hover:not(:disabled) { background: var(--primary-soft); }
+.btn-quiet { background: transparent; color: var(--muted); }
+.btn-quiet:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #93190F; }
+.btn-danger-quiet { background: transparent; color: var(--danger); }
+.btn-danger-quiet:hover:not(:disabled) { background: var(--danger-soft); }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 14px; }
+.btn-block { width: 100%; }
+.btn-add {
+    border: 1.5px dashed var(--border-strong); background: var(--surface-2); color: var(--primary);
+}
+.btn-add:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--primary); }
+.btn-big { min-height: 54px; font-size: 17px; border-radius: 14px; }
+
+/* Small square icon buttons used on each message line */
+.icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; flex: 0 0 42px;
+    border-radius: 12px; border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--primary);
+    font-size: 18px; line-height: 1; text-decoration: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.icon-btn:hover { background: var(--primary-soft); }
+.icon-btn.wa { background: var(--wa); border-color: var(--wa); color: #fff; }
+.icon-btn.wa:hover { background: var(--wa-hover); }
+.icon-btn[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.icon-btn svg { width: 22px; height: 22px; }
+
+/* Pill-shaped small actions on shift headings */
+.pill-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    min-height: 36px; padding: 0 12px; border-radius: 999px;
+    border: 1px solid var(--border-strong); background: var(--surface);
+    font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; white-space: nowrap;
+}
+.pill-btn:hover { background: var(--primary-soft); }
+.pill-btn.restore { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-text); }
+.pill-btn.restore:hover { background: #FDE7C6; }
+.round-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; flex: 0 0 40px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--primary);
+    font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer;
+}
+.round-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+.round-btn.sm-emoji { font-size: 16px; }
+.shift-restore { display: flex; justify-content: flex-end; padding: 4px 4px 0; }
+.shift-restore .pill-btn { min-height: 32px; font-size: 12px; }
+
+/* =====================================================================
+   FORMS
+   ===================================================================== */
+.field { display: grid; gap: 6px; margin-bottom: 14px; }
+.field label, .field-label { font-weight: 600; font-size: 14px; }
+.input {
+    width: 100%; min-height: 46px; padding: 10px 12px;
+    background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px;
+    font-size: 16px;
+}
+.input:focus { border-color: var(--accent); box-shadow: var(--focus); outline: none; }
+.input[aria-invalid="true"] { border-color: var(--danger); }
+.field-error { color: var(--danger); font-size: 14px; font-weight: 600; }
+.field-error:empty { display: none; }
+.required { color: var(--danger); }
+
+/* =====================================================================
+   BOOT / NOTICE / LOGIN
+   ===================================================================== */
+.center-screen {
+    min-height: 100vh; min-height: 100dvh;
+    display: grid; place-items: center; padding: 24px 16px;
+}
+.center-card {
+    width: 100%; max-width: 400px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px 22px;
+}
+.brand { text-align: center; margin-bottom: 22px; }
+.brand h1 { font-size: 26px; color: var(--primary); font-weight: 700; }
+.brand p { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.center-card h2 { font-size: 20px; margin-bottom: 16px; }
+.center-card .btn-primary { width: 100%; min-height: 50px; font-size: 16px; margin-top: 4px; }
+.boot-text { text-align: center; color: var(--muted); }
+.spinner {
+    width: 28px; height: 28px; margin: 0 auto 12px;
+    border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.notice-text { color: var(--muted); font-size: 15px; }
+.notice-text + .notice-text { margin-top: 10px; }
+.code { font-family: Consolas, Menlo, monospace; background: var(--surface-2); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+
+/* =====================================================================
+   HEADER, TABS, DATE
+   ===================================================================== */
+/* The main screen fills exactly one screen height: header, controls, message, copy bar.
+   Only the message area may scroll, and the compact layout is made so it normally does not. */
+#screen-main:not([hidden]) { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+.container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 10px; }
+@media (min-width: 480px) { .container { padding: 0 16px; } }
+#screen-main > .container { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+
+.app-header { background: var(--primary); color: #fff; flex-shrink: 0; }
+.header-inner {
+    max-width: 1100px; margin: 0 auto; padding: 6px 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+@media (min-width: 480px) { .header-inner { padding: 6px 16px; } }
+.app-title { font-size: 17px; font-weight: 700; line-height: 1.25; }
+.app-subtitle { font-size: 11px; opacity: .85; }
+@media (max-width: 420px) { .app-subtitle { display: none; } }
+.header-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-header {
+    min-height: 36px; padding: 0 10px; font-size: 14px;
+    background: rgba(255, 255, 255, .12); color: #fff; border-color: rgba(255, 255, 255, .25);
+}
+.btn-header:hover { background: rgba(255, 255, 255, .22); }
+
+.controls { display: grid; gap: 6px; margin-top: 8px; flex-shrink: 0; }
+@media (min-width: 720px) { .controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.tabs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 3px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px;
+}
+.tab {
+    min-height: 38px; border: 0; border-radius: 10px; background: transparent;
+    font-weight: 600; font-size: 15px; color: var(--muted); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.tab[aria-selected="true"] { background: var(--surface); color: var(--primary); box-shadow: 0 1px 4px rgba(70, 35, 15, .12); }
+.tab-count {
+    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px;
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+
+.date-bar {
+    padding: 3px;
+    display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; gap: 6px; align-items: center;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow);
+}
+.date-nav { width: 40px; height: 38px; border: 0; border-radius: 12px; background: var(--surface-2); color: var(--primary); font-size: 22px; font-weight: 700; cursor: pointer; }
+.date-nav:hover { background: var(--primary-soft); }
+.date-main {
+    position: relative; min-width: 0; min-height: 38px;
+    display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 8px;
+    border: 0; border-radius: 12px; background: transparent; cursor: pointer; padding: 2px 6px;
+}
+.date-main:hover { background: var(--surface-2); }
+.date-text { font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1.3; }
+.day-chip {
+    font-size: 11px; font-weight: 700; padding: 0 8px; border-radius: 999px; line-height: 1.6;
+    background: var(--accent-soft); color: var(--accent-text);
+}
+/* Native date input sits invisibly on top of the date label: tapping the label opens the picker */
+.date-input {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; border: 0; padding: 0; cursor: pointer;
+}
+.date-input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+
+/* =====================================================================
+   MESSAGE CARD (the message itself is the editor)
+   ===================================================================== */
+main.page { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 8px 0; -webkit-overflow-scrolling: touch; }
+/* The message looks like a WhatsApp chat bubble: plain text lines, buttons at the line end */
+.msg-card {
+    position: relative; max-width: 640px;
+    background: #E7FFDB; color: #111B21; border: 0; border-radius: 4px 14px 14px 14px;
+    box-shadow: 0 1px 1px rgba(11, 20, 26, .13); padding: 8px 8px 10px 12px;
+    font-size: 15px; line-height: 1.35;
+}
+.msg-card::before {                       /* bubble tail */
+    content: ""; position: absolute; top: 0; left: -8px;
+    border-top: 0 solid transparent; border-right: 8px solid #E7FFDB; border-bottom: 10px solid transparent;
+}
+.msg-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap;
+    padding: 0 0 12px; font-weight: 400;
+}
+.msg-head-text { min-width: 0; }
+.msg-head-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.msg-head-actions .btn { min-height: 30px; padding: 0 10px; font-size: 13px; border-radius: 10px; background: rgba(255, 255, 255, .7); }
+.msg-note { font-size: 12px; color: var(--accent-text); font-weight: 600; padding: 0 0 8px; margin-top: -6px; }
+
+.msg-grid { display: grid; gap: 12px; }                 /* blank line between shifts */
+.msg-shift { min-width: 0; }
+.msg-shift-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 24px; }
+.msg-shift-title { font-weight: 400; min-width: 0; }
+.head-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.head-actions .round-btn { width: 28px; height: 28px; flex-basis: 28px; font-size: 16px; border-width: 1px; background: rgba(255, 255, 255, .7); }
+.head-actions .round-btn.sm-emoji { font-size: 13px; }
+.head-actions .round-btn.restore { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent-text); font-size: 14px; }
+.msg-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.msg-line {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px;
+    padding: 0 0 0 18px; border-radius: 8px;            /* bullet indent like the copied text */
+}
+.msg-line.is-new { background: rgba(255, 214, 102, .35); }
+.line-text { overflow-wrap: anywhere; }
+.line-phone { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.msg-line .line-phone { color: inherit; }
+.line-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 5px; border-radius: 999px; border: 1px solid var(--accent-line); color: var(--accent-text); background: #fff; vertical-align: middle; }
+.line-actions { display: flex; gap: 2px; }
+.line-actions .icon-btn {
+    width: 30px; height: 30px; flex-basis: 30px; border: 0; border-radius: 50%;
+    background: transparent; color: #54656F; font-size: 15px;
+}
+.line-actions .icon-btn:hover { background: rgba(0, 0, 0, .06); }
+.line-actions .icon-btn.wa { background: transparent; color: #1DAA61; }
+.line-actions .icon-btn.wa:hover { background: rgba(29, 170, 97, .12); }
+.line-actions .icon-btn svg { width: 20px; height: 20px; }
+.line-actions .icon-btn.remove { color: var(--danger); font-size: 14px; font-weight: 700; }
+.line-actions .icon-btn.remove:hover { background: var(--danger-soft); }
+
+/* Shift Change tab: separator line between shifts, "+ Select person" below each shift */
+.change-list { gap: 0; }
+.change-list .msg-shift { padding: 8px 0; border-top: 1px solid rgba(17, 27, 33, .12); }
+.change-list .msg-shift:first-child { border-top: 0; padding-top: 0; }
+.change-list .msg-shift-title { padding-bottom: 2px; }
+.select-btn {
+    display: inline-flex; align-items: center; min-height: 30px; margin: 4px 0 0 18px; padding: 0 12px;
+    font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer;
+    border: 1px dashed var(--border-strong); border-radius: 999px; background: rgba(255, 255, 255, .75);
+}
+.select-btn:hover { background: #fff; border-color: var(--primary); }
+.msg-shift.is-unselected .msg-shift-title { color: #667781; }
+.change-hint { font-size: 12.5px; color: var(--muted); margin: 8px 2px 0; }
+.msg-empty { padding: 0 0 0 18px; color: #667781; font-size: 14px; }
+
+/* ---------- Desktop / web: one centred column, shifts as a 2-column grid ---------- */
+.hdr-label { display: none; }
+@media (min-width: 720px) {
+    .hdr-label { display: inline; }
+    .btn-header { padding: 0 14px; gap: 8px; }
+}
+@media (min-width: 960px) {
+    .container, .header-inner:not(.rs-header-inner) { max-width: 980px; }
+    .controls { margin-top: 14px; gap: 10px; }
+    main.page { padding: 12px 0 16px; }
+
+    .msg-card {
+        max-width: none; padding: 16px 18px 18px;
+        border-radius: 6px 18px 18px 18px; font-size: 15.5px;
+        box-shadow: 0 1px 2px rgba(11, 20, 26, .10), 0 8px 24px rgba(70, 35, 15, .06);
+    }
+    .msg-head { padding-bottom: 14px; border-bottom: 1px solid rgba(17, 27, 33, .10); margin-bottom: 14px; }
+    .msg-note { margin-top: -8px; }
+
+    .msg-grid, .change-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    .msg-shift, .change-list .msg-shift, .change-list .msg-shift:first-child {
+        padding: 10px 10px 10px 12px; border: 1px solid rgba(17, 27, 33, .08); border-radius: 12px;
+        background: rgba(255, 255, 255, .6);
+    }
+    .msg-shift.is-changed { border-color: var(--accent-line); background: rgba(255, 249, 235, .9); }
+    .msg-shift.is-blank { border-style: dashed; }
+    .msg-shift-head { margin-bottom: 4px; }
+    .msg-shift-title { font-weight: 600; color: #0B3D2E; }
+    .msg-line { padding: 2px 4px 2px 10px; transition: background .12s; }
+    .msg-line:hover { background: rgba(0, 0, 0, .04); }
+    .msg-line.is-new:hover { background: rgba(255, 214, 102, .5); }
+    .msg-empty, .select-btn { margin-left: 10px; padding-left: 0; }
+    .select-btn { padding: 0 12px; }
+
+    .change-hint { text-align: center; margin-top: 12px; }
+    .copy-bar-inner { max-width: 980px; display: flex; justify-content: center; }
+    .btn-copy { max-width: 420px; }
+}
+
+/* Regular schedule (Supabase) — day picker */
+.day-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+.day-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid var(--border-strong); background: var(--surface); }
+.day-legend .lg-blank::before { background: var(--accent-soft); border-color: var(--accent); }
+.day-legend .lg-empty::before { background: var(--danger-soft); border-color: var(--danger); border-style: dashed; }
+.day-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.day-cell {
+    display: grid; place-items: center; gap: 0; min-height: 50px; padding: 4px 2px;
+    border: 1.5px solid var(--border-strong); border-radius: 10px; background: var(--surface); cursor: pointer;
+}
+.day-cell:hover { border-color: var(--primary); background: var(--primary-soft); }
+.day-cell.has-blank { background: var(--accent-soft); border-color: var(--accent); }
+.day-cell.is-empty { background: var(--danger-soft); border-color: var(--danger); border-style: dashed; }
+.day-cell.is-current { box-shadow: 0 0 0 2px var(--primary); }
+.day-num { font-weight: 700; font-size: 16px; line-height: 1.1; }
+.day-fill { font-size: 11px; color: var(--muted); font-weight: 600; }
+.sc-block.is-blank { border-style: dashed; border-color: var(--accent); background: #FFFCF7; }
+.blank-tag { font-size: 11px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: middle; }
+
+.banner {
+    padding: 10px 12px; border-radius: 12px; font-size: 14px; margin-bottom: 10px;
+    background: var(--accent-soft); color: var(--accent-text); border: 1px solid var(--accent-line);
+}
+.state-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px 16px; text-align: center; box-shadow: var(--shadow);
+}
+.state-card h3 { font-size: 18px; margin-bottom: 6px; }
+.state-card p { color: var(--muted); margin-bottom: 14px; }
+.state-card p:last-child { margin-bottom: 0; }
+.state-card.ok h3 { color: var(--wa); }
+.state-card.error h3 { color: var(--danger); }
+.change-intro { display: grid; gap: 10px; margin-bottom: 8px; }
+.change-intro .btn-big { min-height: 46px; font-size: 16px; }
+.banner.compact { padding: 6px 10px; font-size: 13px; margin-bottom: 6px; }
+
+.skeleton { border-radius: var(--radius); background: linear-gradient(90deg, #F7EDE2 25%, #FBF4EC 50%, #F7EDE2 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; height: calc(100% - 34px); min-height: 200px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.loading-text { color: var(--muted); font-weight: 500; margin-bottom: 10px; }
+
+/* Copy bar: last row of the full-height layout (all screen sizes) */
+.copy-bar {
+    flex-shrink: 0;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    background: var(--bg); border-top: 1px solid var(--border);
+}
+.copy-bar-inner { max-width: 560px; margin: 0 auto; }
+.btn-copy { width: 100%; min-height: 50px; font-size: 17px; background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(122, 62, 36, .25); }
+.btn-copy:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-copy:disabled { box-shadow: none; }
+
+/* =====================================================================
+   MODAL (bottom sheet on phones)
+   ===================================================================== */
+dialog.modal {
+    width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 24px);
+    padding: 0; border: 0; border-radius: 18px;
+    background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(40, 20, 8, .3);
+}
+dialog.modal::backdrop { background: rgba(40, 20, 8, .45); }
+.modal-form { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { font-size: 18px; }
+.modal-close { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 12px; background: transparent; font-size: 18px; cursor: pointer; color: var(--muted); }
+.modal-body { padding: 14px 16px; overflow-y: auto; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); }
+.modal-actions .btn { min-width: 110px; }
+@media (max-width: 520px) {
+    dialog.modal { width: 100vw; max-width: 100vw; margin: auto 0 0; border-radius: 18px 18px 0 0; max-height: 92dvh; }
+    .modal-form { max-height: 92dvh; }
+    .modal-actions .btn { flex: 1 1 0; }
+}
+.modal-text { color: var(--muted); margin-bottom: 10px; }
+.modal-text strong { color: var(--text); }
+.current-box { padding: 10px 12px; border-radius: 12px; background: var(--surface-2); margin-bottom: 12px; font-size: 15px; }
+.current-box span { color: var(--muted); }
+
+/* People picker (tap a name = choose it) */
+.picker { display: grid; gap: 8px; }
+.pick-list { display: grid; gap: 6px; max-height: 46dvh; overflow-y: auto; padding: 2px; }
+.pick-item {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px;
+    width: 100%; min-height: 54px; padding: 8px 12px; text-align: left;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; cursor: pointer;
+}
+.pick-item:hover:not(:disabled), .pick-item:focus-visible { background: var(--primary-soft); border-color: var(--primary); }
+.pick-item:disabled { cursor: not-allowed; opacity: .55; }
+.pick-name { font-weight: 600; overflow-wrap: anywhere; }
+.pick-sub { font-size: 13px; color: var(--muted); }
+.pick-tag { font-size: 12px; color: var(--muted); font-weight: 600; }
+.pick-go { color: var(--primary); font-weight: 700; font-size: 20px; }
+.pick-status { color: var(--muted); font-size: 14px; padding: 4px 2px; }
+.pick-status:empty { display: none; }
+.temp-box { padding: 12px; border: 1px dashed var(--border-strong); border-radius: 12px; background: #FFFCF7; }
+.temp-box > p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+/* Shift Change sheet */
+.step-title { font-size: 15px; font-weight: 700; margin: 2px 0 8px; }
+.step-hint { font-size: 13px; color: var(--muted); margin: -4px 0 10px; }
+.shift-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+@media (min-width: 480px) { .shift-chips { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.shift-chip {
+    display: grid; gap: 0; text-align: left; min-height: 56px; padding: 8px 10px 8px 36px; position: relative;
+    border: 1.5px solid var(--border-strong); border-radius: 12px; background: var(--surface); cursor: pointer;
+}
+.shift-chip::before {
+    content: ""; position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; border-radius: 6px; border: 2px solid var(--border-strong); background: #fff;
+}
+.shift-chip[aria-pressed="true"] { border-color: var(--primary); background: var(--primary-soft); }
+.shift-chip[aria-pressed="true"]::before { background: var(--primary); border-color: var(--primary); box-shadow: inset 0 0 0 3px #fff; }
+.chip-num { font-weight: 700; font-size: 15px; }
+.chip-time { font-size: 12px; color: var(--muted); }
+.sc-block { border: 1px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 10px; }
+.sc-title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.person-list { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 6px; }
+.person {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px;
+    padding: 6px 6px 6px 10px; border-radius: 10px; background: var(--surface-2); font-size: 15px;
+}
+.person.is-new { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.person .line-phone { font-size: 13px; }
+.person-remove { width: 36px; height: 36px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; }
+.person-remove:hover { background: var(--danger-soft); color: var(--danger); }
+
+/* Manage users */
+.users-toolbar { display: grid; gap: 10px; margin-bottom: 12px; }
+@media (min-width: 480px) { .users-toolbar { grid-template-columns: 1fr auto; } }
+.manage-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.manage-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; }
+.manage-item > div:first-child { min-width: 0; }
+.manage-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.manual-copy { min-height: 260px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+
+/* =====================================================================
+   REGULAR SCHEDULE — 31 days × 6 shifts table + People panel
+   ===================================================================== */
+#screen-regular:not([hidden]) { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: var(--bg); }
+.rs-header-inner { max-width: none; }
+.rs-heading { flex: 1 1 auto; min-width: 0; }
+.rs-stats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.rs-stat { font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: rgba(255, 255, 255, .14); white-space: nowrap; }
+.rs-stat.warn { background: var(--accent-soft); color: var(--accent-text); }
+@media (max-width: 560px) { .rs-heading .app-subtitle, .rs-stat:not(.warn) { display: none; } }
+
+.rs-body {
+    flex: 1 1 auto; min-height: 0; padding: 12px;
+    display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px;
+}
+@media (max-width: 899px) {
+    .rs-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 40%); gap: 8px; padding: 8px; }
+}
+.rs-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.rs-table-wrap {
+    flex: 1 1 auto; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.rs-table-wrap > .state-card, .rs-table-wrap > .rs-loading { margin: 16px; }
+.rs-loading .skeleton { height: 60dvh; margin-top: 10px; }
+
+.rs-table { width: 100%; min-width: 980px; table-layout: fixed; border-collapse: separate; border-spacing: 0; }
+.rs-col-day { width: 64px; }
+.rs-table th, .rs-table td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.rs-table thead th {
+    position: sticky; top: 0; z-index: 2; padding: 8px 10px; text-align: left;
+    background: var(--surface-2); box-shadow: 0 1px 0 var(--border-strong);
+}
+.rs-th-num { display: block; font-size: 14px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.rs-th-time { display: block; font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.rs-table .rs-day {
+    position: sticky; left: 0; z-index: 1; padding: 4px; text-align: center; vertical-align: middle;
+    background: var(--surface-2); color: var(--primary); font-size: 15px; font-weight: 700;
+}
+.rs-table thead .rs-day { z-index: 3; text-align: center; font-size: 13px; }
+.rs-table tr.is-today .rs-day { background: var(--primary); color: #fff; }
+.rs-today-tag { display: block; font-size: 10px; font-weight: 600; opacity: .9; line-height: 1.2; }
+
+.rs-cell { vertical-align: top; padding: 4px; background: var(--surface); cursor: pointer; transition: background .12s, box-shadow .12s; }
+.rs-cell:hover { background: #FFFCF8; }
+.rs-cell.is-empty { background: #FFFAF2; }
+.rs-cell-inner { display: flex; flex-direction: column; gap: 4px; min-height: 36px; }
+.rs-chip {
+    display: flex; flex-direction: column; align-items: stretch; width: 100%; min-height: 30px; padding: 3px 8px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2);
+    font-size: 13px; text-align: left; cursor: grab;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.rs-chip:hover { border-color: var(--primary); background: var(--primary-soft); }
+.rs-chip-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; line-height: 1.35; }
+.rs-chip-phone { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.rs-chip.is-swap { background: #FDE7C6; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.rs-chip.is-swap .rs-chip-name::before { content: "⇄ "; color: var(--accent-text); }
+.rs-chip.is-hl { background: #FDE7C6; border-color: var(--accent); }
+.rs-chip.is-pending { opacity: .55; cursor: progress; }
+.rs-chip.is-drag-src { opacity: .35; border-style: dashed; }
+.rs-add {
+    min-height: 28px; border: 1px dashed var(--border-strong); border-radius: 8px; background: transparent;
+    color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer; opacity: 0; transition: opacity .12s;
+}
+.rs-cell:not(.is-empty) .rs-add { min-height: 20px; font-size: 12px; line-height: 1; }
+.rs-cell:hover .rs-add, .rs-add:focus-visible { opacity: 1; }
+.rs-cell.is-empty .rs-add { opacity: 1; border-color: var(--accent); color: var(--accent-text); background: var(--accent-soft); }
+@media (hover: none) { .rs-cell:not(.is-empty) .rs-add { display: none; } }   /* phones: tap the box instead */
+
+/* Tap-to-assign mode */
+.rs-armed {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0;
+    padding: 6px 6px 6px 12px; border-radius: 12px; font-size: 14px;
+    background: var(--accent-soft); color: var(--accent-text); border: 1px solid var(--accent-line);
+}
+.rs-armed strong { color: var(--text); }
+.rs.is-armed .rs-cell:hover { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+
+/* Drag & drop */
+.rs.is-dragging, .rs.is-dragging * { user-select: none; -webkit-user-select: none; cursor: grabbing !important; }
+.rs-cell.is-over { background: var(--primary-soft); box-shadow: inset 0 0 0 2px var(--primary); }
+.rs-cell.is-over.is-invalid { background: var(--danger-soft); box-shadow: inset 0 0 0 2px var(--danger); }
+.rs-ghost {
+    position: fixed; left: 0; top: 0; z-index: 70; pointer-events: none;
+    max-width: 240px; padding: 6px 12px; border-radius: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: var(--primary); color: #fff; font-size: 14px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(40, 20, 8, .35);
+}
+.rs-trash {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 65;
+    transform: translateX(-50%); transition: transform .12s, background .12s, color .12s;
+    display: flex; align-items: center; justify-content: center; gap: 12px; min-width: 260px; padding: 18px 34px; border-radius: 999px;
+    background: var(--surface); color: var(--danger); border: 2px dashed var(--danger);
+    font-size: 16px; font-weight: 700; box-shadow: 0 10px 30px rgba(40, 20, 8, .25);
+}
+.rs-trash-icon { font-size: 28px; line-height: 1; }
+.rs-trash:not([hidden]) { animation: rs-trash-in .16s ease-out; }
+@keyframes rs-trash-in { from { opacity: 0; transform: translate(-50%, 16px); } }
+.rs-trash.is-over { background: var(--danger); color: #fff; border-style: solid; transform: translateX(-50%) scale(1.08); }
+
+/* People panel */
+.rs-side {
+    min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.rs-side-head { display: grid; gap: 8px; padding: 12px; border-bottom: 1px solid var(--border); }
+.rs-side-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 16px; }
+.rs-side-count { font-size: 12px; font-weight: 600; color: var(--muted); }
+.rs-hint { font-size: 12px; color: var(--muted); }
+@media (max-width: 899px) { .rs-side-head { padding: 8px; gap: 6px; } .rs-hint { display: none; } }
+.rs-users { list-style: none; margin: 0; padding: 8px; flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; gap: 6px; align-content: start; }
+.rs-user {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px;
+    width: 100%; padding: 8px 10px; text-align: left; cursor: grab;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.rs-user:hover { border-color: var(--primary); background: var(--primary-soft); }
+.rs-user[aria-pressed="true"] { border-color: var(--primary); background: var(--primary); color: #fff; }
+.rs-user[aria-pressed="true"] .pick-sub, .rs-user[aria-pressed="true"] .rs-grip { color: rgba(255, 255, 255, .8); }
+.rs-user-text { display: grid; min-width: 0; }
+.rs-user-text .pick-name, .rs-user-text .pick-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rs-grip { color: var(--border-strong); font-size: 16px; line-height: 1; }
+.rs-count {
+    min-width: 26px; height: 22px; padding: 0 7px; border-radius: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 700;
+}
+.rs-count.is-zero { background: var(--accent-soft); color: var(--accent-text); }
+.rs-user[aria-pressed="true"] .rs-count { background: rgba(255, 255, 255, .2); color: #fff; }
+.rs-modal-gap { margin-top: 14px; margin-bottom: 6px; }
+
+/* =====================================================================
+   TOAST
+   ===================================================================== */
+.toast-region {
+    position: fixed; left: 50%; transform: translateX(-50%); z-index: 60;
+    bottom: calc(var(--copybar-space) + 12px); width: max-content; max-width: calc(100vw - 32px);
+    pointer-events: none;
+}
+.toast {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 12px; background: #2A1A12; color: #fff;
+    font-weight: 500; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); pointer-events: auto;
+}
+.toast.error { background: var(--danger); }
+.toast button { background: none; border: 0; color: #FCD9A0; font-weight: 700; cursor: pointer; min-height: 32px; padding: 0 4px; text-decoration: underline; }
+.clip-helper { position: fixed; top: 0; left: -9999px; opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner, .skeleton { animation: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============================ BOOT ============================ -->
+<main id="screen-boot" class="center-screen">
+    <div>
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="boot-text" role="status">Opening ભજન બાગ સેવા...</p>
+    </div>
+</main>
+
+<!-- ======================= SETUP / FATAL ======================== -->
+<main id="screen-notice" class="center-screen" hidden>
+    <div class="center-card">
+        <div class="brand">
+            <h1>🙏 ભજન બાગ સેવા</h1>
+            <p>Daily Seva Message Generator</p>
+        </div>
+        <h2 id="notice-title">Setup needed</h2>
+        <div id="notice-body"></div>
+        <button type="button" class="btn btn-secondary btn-block" id="notice-reload" style="margin-top:16px">↻ Try Again</button>
+    </div>
+</main>
+
+<!-- ============================ LOGIN =========================== -->
+<main id="screen-login" class="center-screen" hidden>
+    <form class="center-card" id="login-form" novalidate>
+        <div class="brand">
+            <h1>🙏 ભજન બાગ સેવા</h1>
+            <p>Daily Seva Message Generator</p>
+        </div>
+        <h2>Login</h2>
+        <div class="field">
+            <label for="login-email">Email</label>
+            <input class="input" id="login-email" type="email" autocomplete="username" inputmode="email" required>
+        </div>
+        <div class="field">
+            <label for="login-password">Password</label>
+            <input class="input" id="login-password" type="password" autocomplete="current-password" required>
+        </div>
+        <p class="field-error" id="login-error" role="alert"></p>
+        <button type="submit" class="btn btn-primary" id="login-submit">Login</button>
+    </form>
+</main>
+
+<!-- ============================= APP ============================ -->
+<div id="screen-main" hidden>
+    <header class="app-header">
+        <div class="header-inner">
+            <div>
+                <h1 class="app-title">🙏 ભજન બાગ સેવા</h1>
+                <p class="app-subtitle">Daily Seva Message Generator</p>
+            </div>
+            <div class="header-actions">
+                <a class="btn btn-header" id="home-link" href="/" title="Home" aria-label="Back to home" hidden>🏠</a>
+                <button type="button" class="btn btn-header" data-action="regular-schedule" title="Regular schedule (all days)" aria-label="Regular schedule"><span aria-hidden="true">📅</span><span class="hdr-label">Regular Schedule</span></button>
+                <button type="button" class="btn btn-header" data-action="manage-users" title="Manage Users" aria-label="Manage Users"><span aria-hidden="true">👥</span><span class="hdr-label">Users</span></button>
+                <button type="button" class="btn btn-header" data-action="logout">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+      <div class="controls">
+        <div class="tabs" role="tablist" aria-label="Message type">
+            <button type="button" class="tab" role="tab" id="tab-full" aria-controls="panel" data-tab="full">Full Message</button>
+            <button type="button" class="tab" role="tab" id="tab-change" aria-controls="panel" data-tab="change">
+                Shift Change <span class="tab-count" id="change-count" hidden></span>
+            </button>
+        </div>
+
+        <div class="date-bar">
+            <button type="button" class="date-nav" data-action="prev-day" aria-label="Previous day" title="Previous day">‹</button>
+            <div class="date-main" title="Change date">
+                <span class="date-text" id="date-label"></span>
+                <span class="day-chip" id="date-chip" hidden></span>
+                <input class="date-input" type="date" id="date-input" aria-label="Date" required>
+            </div>
+            <button type="button" class="date-nav" data-action="next-day" aria-label="Next day" title="Next day">›</button>
+        </div>
+      </div>
+
+        <main class="page" id="panel" role="tabpanel" aria-labelledby="tab-full"></main>
+    </div>
+
+    <div class="copy-bar">
+        <div class="copy-bar-inner">
+            <button type="button" class="btn btn-copy" data-action="copy" id="copy-btn">📋 Copy Message</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================ REGULAR SCHEDULE (31 days × 6 shifts) ================ -->
+<section id="screen-regular" class="rs" hidden aria-labelledby="rs-title">
+    <header class="app-header">
+        <div class="header-inner rs-header-inner">
+            <button type="button" class="btn btn-header" id="rs-back" aria-label="Back to messages">‹ Back</button>
+            <div class="rs-heading">
+                <h1 class="app-title" id="rs-title">📅 Regular Schedule</h1>
+                <p class="app-subtitle">Day of month × shift · same list every month</p>
+            </div>
+            <div class="rs-stats" id="rs-stats" role="status"></div>
+        </div>
+    </header>
+    <div class="rs-body">
+        <div class="rs-main">
+            <div class="rs-armed" id="rs-armed" role="status" hidden></div>
+            <div class="rs-table-wrap" id="rs-table-wrap"></div>
+        </div>
+        <aside class="rs-side" aria-labelledby="rs-side-title">
+            <div class="rs-side-head">
+                <h2 class="rs-side-title" id="rs-side-title">People <span class="rs-side-count" id="rs-user-count"></span></h2>
+                <input class="input" type="search" id="rs-search" autocomplete="off" enterkeyhint="search"
+                       placeholder="Search ગુજરાતી / English name or mobile..." aria-label="Search people">
+                <p class="rs-hint">Drag a person onto a box (long-press on phone), or tap a person and then tap boxes.</p>
+            </div>
+            <ul class="rs-users" id="rs-users"></ul>
+        </aside>
+    </div>
+    <div class="rs-trash" id="rs-trash" data-drop="trash" hidden aria-hidden="true">
+        <span class="rs-trash-icon">🗑</span><span>Drop here to remove</span>
+    </div>
+</section>
+
+<dialog class="modal" id="modal" aria-labelledby="modal-title"></dialog>
+<div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+<!-- Supabase JS v2 (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+"use strict";
+
+/* #####################################################################
+ * 1. CONFIGURATION  —  REPLACE THESE TWO VALUES
+ * ---------------------------------------------------------------------
+ * Supabase Dashboard → Project Settings → API Keys (and Data API for URL)
+ *   SUPABASE_URL              e.g. "https://abcdefghijkl.supabase.co"
+ *   SUPABASE_PUBLISHABLE_KEY  "sb_publishable_..."  (or the legacy "anon public" key)
+ *
+ * The Publishable Key is meant for browsers. NEVER put the Secret Key
+ * (sb_secret_...) or the service_role key here.
+ * ##################################################################### */
+const SUPABASE_URL = "https://zabfbmeyozcyuuxcfrks.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BUXsaOtZYRx1ntnhB6wmRQ_msQpiRaL";
+
+
+/* =====================================================================
+ * 2. FIXED APP SETTINGS
+ * ===================================================================== */
+const APP_TIMEZONE = "Asia/Kolkata";
+const DEFAULT_COUNTRY_CODE = "91";
+const STORAGE_KEY = "bhajanBaugSeva.overrides.v1";
+const KEEP_OVERRIDE_DAYS = 60;            // temporary changes older than this are cleaned up
+
+/* Which date each tab shows when the app opens (days from today, India time) */
+const DEFAULT_DAY_OFFSET = { full: 1, change: 0 };   // Full Message = tomorrow, Shift Change = today
+
+/* The six fixed shifts. Keys match tbl_user_shift_mapping.shift exactly. */
+const SHIFT_CONFIG = {
+    shift1: { number: 1, start: "6:00 AM",  end: "9:00 AM"  },
+    shift2: { number: 2, start: "9:00 AM",  end: "11:00 AM" },
+    shift3: { number: 3, start: "11:00 AM", end: "1:00 PM"  },
+    shift4: { number: 4, start: "1:00 PM",  end: "4:00 PM"  },
+    shift5: { number: 5, start: "4:00 PM",  end: "7:00 PM"  },
+    shift6: { number: 6, start: "7:00 PM",  end: "10:00 PM" }
+};
+const SHIFT_KEYS = Object.keys(SHIFT_CONFIG);
+
+const GUJARATI_DAYS = ["રવિવાર", "સોમવાર", "મંગળવાર", "બુધવાર", "ગુરુવાર", "શુક્રવાર", "શનિવાર"];
+
+
+/* =====================================================================
+ * 3. MESSAGE TEMPLATES — change WhatsApp wording here only
+ * ===================================================================== */
+const MESSAGE_TEMPLATES = {
+    fullHeader: (dateWithDay) =>
+        "Date: " + dateWithDay + "\n🙏🏼 ભજનબાગ સેવામાં આવનાર ભક્તો ની યાદી:",
+
+    shiftChangeHeader: "આજે ભજન બાગ સેવામાં આવનારા ભક્તોની શિફ્ટમાં ફેરફાર કરેલ છે",
+    noShiftChange: "કોઈ શિફ્ટ ફેરફાર નથી",
+    emptyShiftUi: "• કોઈ ભક્ત ફાળવેલ નથી",          // shown in the UI only, never in messages
+
+    shiftHeading: (shift) => "🔹 શિફ્ટ " + shift.shiftNumber + " – " + shift.start + " to " + shift.end,
+    userLine: (user) => "• " + normalizeName(user.name) + "- " + displayPhone(user.phone),
+
+    /* Personal message for the 💬 WhatsApp button next to each person */
+    personal: (p) =>
+        "નમસ્તે " + p.name + " 🙏🏼\n" +
+        "\n" +
+        p.when + " ભજન બાગમાં તમારી સેવા છે.\n" +
+        "\n" +
+        "🔹 શિફ્ટ " + p.shiftNumber + "\n" +
+        p.start + " to " + p.end + "\n" +
+        "\n" +
+        "આપ સમયસર પધારશો. 🙏🏼",
+    whenToday: "આજે",
+    whenTomorrow: "આવતીકાલે",
+    whenOtherDate: (dateWithDay) => "તારીખ " + dateWithDay + " ના રોજ"
+};
+
+
+/* =====================================================================
+ * 4. DATE HELPERS (Asia/Kolkata, no UTC shifting)
+ * ---------------------------------------------------------------------
+ * Dates are kept as "YYYY-MM-DD" strings. We never call
+ * new Date("YYYY-MM-DD") because that is parsed as UTC midnight and can
+ * become the previous day. Weekday maths uses Date.UTC(y, m, d) which has
+ * no timezone offset at all.
+ * ===================================================================== */
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+function daysInMonth(year, month) {
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/** "2026-09-30" → { year: 2026, month: 9, day: 30 }, or null if invalid. */
+function parseISODate(value) {
+    if (typeof value !== "string") return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+    if (!m) return null;
+    const year = Number(m[1]), month = Number(m[2]), day = Number(m[3]);
+    if (year < 1900 || year > 2999 || month < 1 || month > 12) return null;
+    if (day < 1 || day > daysInMonth(year, month)) return null;
+    return { year, month, day };
+}
+
+function isValidISODate(value) { return parseISODate(value) !== null; }
+
+function toISODate(year, month, day) {
+    return String(year).padStart(4, "0") + "-" + pad2(month) + "-" + pad2(day);
+}
+
+/** Today in India as "YYYY-MM-DD", whatever timezone the phone/PC uses. */
+function getTodayIST(now) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: APP_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit"
+    }).formatToParts(now || new Date());
+    const get = (type) => (parts.find((p) => p.type === type) || {}).value;
+    return get("year") + "-" + get("month") + "-" + get("day");
+}
+
+/** addDays("2026-12-31", 1) → "2027-01-01" */
+function addDays(isoDate, days) {
+    const p = parseISODate(isoDate);
+    if (!p) return null;
+    const dt = new Date(Date.UTC(p.year, p.month - 1, p.day + days));
+    return toISODate(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+}
+
+/** The value stored in tbl_user_shift_mapping.date: "2026-09-30" → 30 */
+function getDatabaseDay(isoDate) {
+    const p = parseISODate(isoDate);
+    return p ? p.day : null;
+}
+
+function getGujaratiDayName(isoDate) {
+    const p = parseISODate(isoDate);
+    if (!p) return "";
+    return GUJARATI_DAYS[new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay()];
+}
+
+/** "2026-09-30" → "30/09/2026" */
+function formatDisplayDate(isoDate) {
+    const p = parseISODate(isoDate);
+    return p ? pad2(p.day) + "/" + pad2(p.month) + "/" + p.year : "";
+}
+
+/** "2026-09-30" → "30/09/2026 (બુધવાર)" */
+function formatDateWithDay(isoDate) {
+    return isValidISODate(isoDate) ? formatDisplayDate(isoDate) + " (" + getGujaratiDayName(isoDate) + ")" : "";
+}
+
+
+/* =====================================================================
+ * 5. NAME + PHONE HELPERS
+ * ===================================================================== */
+
+/** "  Anil   Jivani " → "Anil Jivani" */
+function normalizeName(name) {
+    return String(name == null ? "" : name).replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Normalize a phone number to international format "+<country><number>".
+ * Returns "" if it is not a reasonable phone number.
+ *   "+91 99781-53900"   → "+919978153900"
+ *   "919978153900"      → "+919978153900"
+ *   "9978153900"        → "+919978153900"   (10 digits = Indian mobile)
+ *   "09978153900"       → "+919978153900"
+ *   "0091 9978153900"   → "+919978153900"
+ *   "+1 (415) 555-0100" → "+14155550100"    (other country codes are kept)
+ */
+function normalizePhone(phone) {
+    const raw = String(phone == null ? "" : phone).trim();
+    if (!raw) return "";
+    // Only digits, "+", spaces, dashes, dots and brackets are allowed
+    if (!/^\+?[\d\s\-().]+$/.test(raw)) return "";
+    const hasPlus = raw.charAt(0) === "+";
+    let digits = raw.replace(/\D/g, "");
+
+    if (!hasPlus) {
+        if (digits.startsWith("00")) digits = digits.slice(2);                         // 0091...
+        else if (digits.length === 10) digits = DEFAULT_COUNTRY_CODE + digits;         // 9978153900
+        else if (digits.length === 11 && digits.startsWith("0")) digits = DEFAULT_COUNTRY_CODE + digits.slice(1);
+    }
+    if (digits.length < 11 || digits.length > 15 || digits.startsWith("0")) return "";
+    // Indian mobile: +91 followed by 10 digits starting with 6-9
+    if (digits.startsWith(DEFAULT_COUNTRY_CODE) && digits.length === 12 && !/^91[6-9]/.test(digits)) return "";
+    return "+" + digits;
+}
+
+function isValidPhone(phone) { return normalizePhone(phone) !== ""; }
+
+/** Key used to compare phones: "+919999999999" and "919999999999" → "919999999999" */
+function phoneKey(phone) {
+    return normalizePhone(phone).replace("+", "") || String(phone == null ? "" : phone).replace(/\D/g, "");
+}
+
+/** Phone for display/messages: normalized if possible, otherwise as stored. */
+function displayPhone(phone) {
+    return normalizePhone(phone) || String(phone == null ? "" : phone).trim();
+}
+
+/**
+ * Identity of a person inside a shift:
+ *   permanent user → database id
+ *   temporary user → normalized phone
+ * Same name + different phone = different people.
+ */
+function userIdentity(user) {
+    if (user && !user.temporary && user.id) return "id:" + user.id;
+    return "phone:" + phoneKey(user && user.phone);
+}
+
+/** Is `candidate` already in `users`? (phone first, then id) */
+function isUserInList(users, candidate) {
+    const key = phoneKey(candidate.phone);
+    return (users || []).some((u) =>
+        (key && phoneKey(u.phone) === key) ||
+        (!candidate.temporary && candidate.id && !u.temporary && u.id === candidate.id));
+}
+
+
+/* =====================================================================
+ * 6. SCHEDULE MODEL + MESSAGE GENERATION (pure functions)
+ * ===================================================================== */
+
+/** Columns read from tbl_user (also used inside schedule joins). */
+const USER_COLUMNS = "id, gu_full_name, en_full_name, mobile_number, leader_name";
+
+/** Lower-case + Unicode-normalized text for searching Gujarati and English alike. */
+function searchText(value) {
+    return normalizeName(value).normalize("NFC").toLowerCase();
+}
+
+/** Does the user match a search? Gujarati name, English name, leader or mobile digits. */
+function userMatchesQuery(user, query) {
+    const q = searchText(query);
+    if (!q) return true;
+    const digits = q.replace(/\D/g, "");
+    return searchText(user.name).includes(q) ||
+        searchText(user.enName).includes(q) ||
+        searchText(user.leaderName).includes(q) ||
+        (digits.length >= 3 && phoneKey(user.phone).includes(digits));
+}
+
+/** Database user row → frontend user */
+function toFrontendUser(row) {
+    return {
+        id: row.id,
+        name: normalizeName(row.gu_full_name),         // shown everywhere + in messages
+        enName: normalizeName(row.en_full_name),       // English name, used for search only
+        phone: String(row.mobile_number || "").trim(),
+        leaderName: normalizeName(row.leader_name),
+        temporary: false
+    };
+}
+
+function createEmptyShift(shiftKey) {
+    const cfg = SHIFT_CONFIG[shiftKey];
+    return { shift: shiftKey, shiftNumber: cfg.number, start: cfg.start, end: cfg.end, users: [] };
+}
+
+/**
+ * Supabase rows (tbl_user_shift_mapping + embedded tbl_user) → all six shifts.
+ * Shifts without rows get an empty users list.
+ */
+function buildDefaultSchedule(rows) {
+    const byShift = {};
+    SHIFT_KEYS.forEach((key) => { byShift[key] = createEmptyShift(key); });
+
+    (rows || []).forEach((row) => {
+        const shift = byShift[String(row.shift || "").trim().toLowerCase()];
+        const userRow = Array.isArray(row.tbl_user) ? row.tbl_user[0] : row.tbl_user;
+        if (!shift) { console.warn("Unknown shift value in database row:", row); return; }
+        if (!userRow) { console.warn("Mapping row without user:", row); return; }
+        const user = toFrontendUser(userRow);
+        if (!shift.users.some((u) => u.id === user.id)) shift.users.push(user);
+    });
+    return SHIFT_KEYS.map((key) => byShift[key]);
+}
+
+/**
+ * defaultSchedule + this date's overrides → currentSchedule.
+ * An override is the COMPLETE user list of a shift; an empty array means
+ * "everyone removed". A missing key means "no override".
+ * Permanent users are refreshed from the latest user list (usersById).
+ */
+function applyOverrides(defaultSchedule, dateOverride, usersById) {
+    return defaultSchedule.map((shift) => {
+        const hasOverride = Object.prototype.hasOwnProperty.call(dateOverride || {}, shift.shift);
+        const users = hasOverride
+            ? dateOverride[shift.shift].map((u) => {
+                const latest = !u.temporary && u.id && usersById ? usersById.get(u.id) : null;
+                return latest ? { ...latest } : { ...u };
+            })
+            : shift.users.map((u) => ({ ...u }));
+        return { ...shift, users, hasOverride };
+    });
+}
+
+/** Same people, ignoring order. */
+function areUserListsEqual(a, b) {
+    const ka = (a || []).map(userIdentity).sort();
+    const kb = (b || []).map(userIdentity).sort();
+    return ka.length === kb.length && ka.every((k, i) => k === kb[i]);
+}
+
+/** Shifts in currentSchedule whose people differ from defaultSchedule. */
+function compareSchedules(defaultSchedule, currentSchedule) {
+    const defaults = {};
+    (defaultSchedule || []).forEach((s) => { defaults[s.shift] = s; });
+    return (currentSchedule || [])
+        .filter((s) => !defaults[s.shift] || !areUserListsEqual(defaults[s.shift].users, s.users))
+        .sort((a, b) => a.shiftNumber - b.shiftNumber);
+}
+
+/** Heading + one line per person. Empty shift → heading only. */
+function formatShiftBlock(shift) {
+    return [MESSAGE_TEMPLATES.shiftHeading(shift)]
+        .concat((shift.users || []).map(MESSAGE_TEMPLATES.userLine))
+        .join("\n");
+}
+
+/** The daily list copied into the WhatsApp group. */
+function generateFullMessage(schedule, date) {
+    const blocks = [MESSAGE_TEMPLATES.fullHeader(formatDateWithDay(date))];
+    (schedule || []).slice().sort((a, b) => a.shiftNumber - b.shiftNumber)
+        .forEach((s) => blocks.push(formatShiftBlock(s)));
+    return blocks.join("\n\n");
+}
+
+/** Only changed shifts. Returns "" when there is no change. (date kept for a consistent API) */
+function generateShiftChangeMessage(changedShifts, date) { // eslint-disable-line no-unused-vars
+    if (!changedShifts || changedShifts.length === 0) return "";
+    const blocks = [MESSAGE_TEMPLATES.shiftChangeHeader];
+    changedShifts.slice().sort((a, b) => a.shiftNumber - b.shiftNumber)
+        .forEach((s) => blocks.push(formatShiftBlock(s)));
+    return blocks.join("\n\n");
+}
+
+/** Personal pre-filled WhatsApp message. `today` is optional (used by tests). */
+function generateUserWhatsAppMessage(user, shift, date, today) {
+    const todayIso = today || getTodayIST();
+    let when = MESSAGE_TEMPLATES.whenToday;
+    if (date === addDays(todayIso, 1)) when = MESSAGE_TEMPLATES.whenTomorrow;
+    else if (date !== todayIso) when = MESSAGE_TEMPLATES.whenOtherDate(formatDateWithDay(date));
+    return MESSAGE_TEMPLATES.personal({
+        name: normalizeName(user.name), when,
+        shiftNumber: shift.shiftNumber, start: shift.start, end: shift.end
+    });
+}
+
+/** https://wa.me/919978153900?text=... ("" if the phone is invalid) */
+function buildWhatsAppUrl(phone, text) {
+    const digits = normalizePhone(phone).replace("+", "");
+    if (!digits) return "";
+    return "https://wa.me/" + digits + (text ? "?text=" + encodeURIComponent(text) : "");
+}
+
+/** tel:+919978153900 ("" if the phone is invalid) */
+function buildTelUrl(phone) {
+    const n = normalizePhone(phone);
+    return n ? "tel:" + n : "";
+}
+
+function deepFreeze(obj) {
+    Object.values(obj).forEach((v) => { if (v && typeof v === "object") deepFreeze(v); });
+    return Object.freeze(obj);
+}
+
+
+/* =====================================================================
+ * 7. LOCAL STORAGE SERVICE (temporary changes, this browser only)
+ * ---------------------------------------------------------------------
+ * {
+ *   "version": 1,
+ *   "scheduleOverrides": {
+ *     "2026-09-30": {
+ *       "shift4": [ { "id": "tmp-…", "name": "…", "phone": "+91…", "leaderName": "", "temporary": true } ],
+ *       "shift6": []          ← override with empty list = everyone removed
+ *     }
+ *   }
+ * }
+ * A shift key that is NOT present = no override (use the database list).
+ * The in-memory copy stays correct even when localStorage fails.
+ * ===================================================================== */
+const overrideStore = (() => {
+    let data = { version: 1, scheduleOverrides: {} };
+    let lastError = null;
+
+    function sanitizeUser(u) {
+        if (!u || typeof u !== "object") return null;
+        const name = normalizeName(u.name);
+        const phone = String(u.phone == null ? "" : u.phone).trim();
+        if (!name || !phone) return null;
+        const temporary = !!u.temporary || !u.id;
+        return {
+            id: u.id ? String(u.id) : "tmp-" + phoneKey(phone),
+            name, phone,
+            leaderName: normalizeName(u.leaderName),
+            temporary
+        };
+    }
+
+    function sanitize(raw) {
+        const clean = { version: 1, scheduleOverrides: {} };
+        const src = raw && typeof raw === "object" ? raw.scheduleOverrides : null;
+        if (!src || typeof src !== "object") return clean;
+        Object.keys(src).forEach((date) => {
+            if (!isValidISODate(date) || !src[date] || typeof src[date] !== "object") return;
+            const day = {};
+            Object.keys(src[date]).forEach((shift) => {
+                if (SHIFT_CONFIG[shift] && Array.isArray(src[date][shift])) {
+                    day[shift] = src[date][shift].map(sanitizeUser).filter(Boolean);
+                }
+            });
+            if (Object.keys(day).length) clean.scheduleOverrides[date] = day;
+        });
+        return clean;
+    }
+
+    function isQuotaError(e) {
+        return e && (e.name === "QuotaExceededError" || e.code === 22 || e.code === 1014 ||
+            e.name === "NS_ERROR_DOM_QUOTA_REACHED");
+    }
+
+    /** Read everything from localStorage into memory. */
+    function loadOverrides() {
+        let raw = null;
+        try {
+            raw = window.localStorage.getItem(STORAGE_KEY);
+            lastError = null;
+        } catch (e) {
+            console.warn("localStorage is not available:", e);
+            lastError = "unavailable";
+            return data;
+        }
+        try {
+            data = raw ? sanitize(JSON.parse(raw)) : { version: 1, scheduleOverrides: {} };
+        } catch (e) {
+            console.warn("Saved changes were damaged and have been reset:", e);
+            data = { version: 1, scheduleOverrides: {} };
+        }
+        return data;
+    }
+
+    /** Write memory → localStorage. Returns true/false (never throws). */
+    function saveOverrides() {
+        try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            lastError = null;
+            return true;
+        } catch (e) {
+            console.warn("Could not save changes:", e);
+            lastError = isQuotaError(e) ? "full" : "unavailable";
+            return false;
+        }
+    }
+
+    /** { shift4: [...], ... } for a date (a copy). */
+    function getDateOverride(date) {
+        const d = data.scheduleOverrides[date];
+        return d ? JSON.parse(JSON.stringify(d)) : {};
+    }
+
+    function setShiftOverride(date, shift, users) {
+        if (!SHIFT_CONFIG[shift] || !isValidISODate(date)) return false;
+        if (!data.scheduleOverrides[date]) data.scheduleOverrides[date] = {};
+        data.scheduleOverrides[date][shift] = (users || []).map(sanitizeUser).filter(Boolean);
+        return saveOverrides();
+    }
+
+    function removeShiftOverride(date, shift) {
+        const d = data.scheduleOverrides[date];
+        if (d) {
+            delete d[shift];
+            if (Object.keys(d).length === 0) delete data.scheduleOverrides[date];
+        }
+        return saveOverrides();
+    }
+
+    function resetDay(date) {
+        delete data.scheduleOverrides[date];
+        return saveOverrides();
+    }
+
+    function clearAllOverrides() {
+        data = { version: 1, scheduleOverrides: {} };
+        return saveOverrides();
+    }
+
+    function hasAnyOverrides() {
+        return Object.keys(data.scheduleOverrides).length > 0;
+    }
+
+    /** Remove temporary changes for dates older than `keepDays` before today. */
+    function pruneOldOverrides(today, keepDays) {
+        const cutoff = addDays(today, -keepDays);
+        let changed = false;
+        Object.keys(data.scheduleOverrides).forEach((date) => {
+            if (date < cutoff) { delete data.scheduleOverrides[date]; changed = true; }
+        });
+        if (changed) saveOverrides();
+    }
+
+    return {
+        loadOverrides, saveOverrides, getDateOverride, setShiftOverride,
+        removeShiftOverride, resetDay, clearAllOverrides, hasAnyOverrides, pruneOldOverrides,
+        getLastError: () => lastError
+    };
+})();
+
+
+/* =====================================================================
+ * 7b. SHIFT CHANGE STORE (temporary, this browser only — never Supabase)
+ * ---------------------------------------------------------------------
+ * The people picked on the Shift Change tab, per date and shift:
+ *   { "2026-10-02": { "shift1": [ { id, name, phone, leaderName, temporary } ] } }
+ * Separate from the Full Message changes; used only for the change message.
+ * ===================================================================== */
+const SHIFT_CHANGE_STORAGE_KEY = "bhajanBaugSeva.shiftChange.v1";
+const changeStore = (() => {
+    let data = {};
+
+    function cleanUser(u) {
+        if (!u || typeof u !== "object") return null;
+        const name = normalizeName(u.name);
+        const phone = String(u.phone == null ? "" : u.phone).trim();
+        if (!name || !phone) return null;
+        return { id: u.id ? String(u.id) : "tmp-" + phoneKey(phone), name, phone,
+            leaderName: normalizeName(u.leaderName), temporary: !!u.temporary || !u.id };
+    }
+
+    function load() {
+        data = {};
+        let raw = null;
+        try { raw = JSON.parse(window.localStorage.getItem(SHIFT_CHANGE_STORAGE_KEY) || "{}"); }
+        catch (e) { console.warn("Shift change data could not be read and was reset:", e); return; }
+        Object.keys(raw || {}).forEach((date) => {
+            if (!isValidISODate(date) || !raw[date] || typeof raw[date] !== "object") return;
+            const day = {};
+            Object.keys(raw[date]).forEach((k) => {
+                if (!SHIFT_CONFIG[k] || !Array.isArray(raw[date][k])) return;
+                const list = raw[date][k].map(cleanUser).filter(Boolean);
+                if (list.length) day[k] = list;
+            });
+            if (Object.keys(day).length) data[date] = day;
+        });
+    }
+
+    function save() {
+        try { window.localStorage.setItem(SHIFT_CHANGE_STORAGE_KEY, JSON.stringify(data)); return true; }
+        catch (e) { console.warn("Could not save shift change:", e); return false; }
+    }
+
+    /** { shift1: [...] } for a date (a copy). */
+    function get(date) { return JSON.parse(JSON.stringify(data[date] || {})); }
+
+    function setShift(date, shiftKey, users) {
+        if (!SHIFT_CONFIG[shiftKey] || !isValidISODate(date)) return false;
+        const list = (users || []).map(cleanUser).filter(Boolean);
+        if (!data[date]) data[date] = {};
+        if (list.length) data[date][shiftKey] = list; else delete data[date][shiftKey];
+        if (!Object.keys(data[date]).length) delete data[date];
+        return save();
+    }
+
+    function prune(today, keepDays) {
+        const cutoff = addDays(today, -keepDays);
+        let changed = false;
+        Object.keys(data).forEach((date) => { if (date < cutoff) { delete data[date]; changed = true; } });
+        if (changed) save();
+    }
+
+    return { load, get, setShift, prune };
+})();
+
+
+/* =====================================================================
+ * 8. SUPABASE SERVICES (all database access lives here)
+ * ===================================================================== */
+let supabaseClient = null;
+
+function isSupabaseConfigured() {
+    return /^https?:\/\//.test(SUPABASE_URL) && SUPABASE_PUBLISHABLE_KEY && !SUPABASE_PUBLISHABLE_KEY.startsWith("YOUR_");
+}
+
+function initSupabaseClient() {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") return false;
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    return true;
+}
+
+/** Convert any Supabase / network error into a friendly message. */
+function friendlyError(error, fallback) {
+    const msg = String((error && (error.message || error.error_description)) || "");
+    const code = String((error && error.code) || "");
+    const status = error && error.status;
+    console.error("[Bhajan Baug]", fallback, error);
+
+    if ((typeof navigator !== "undefined" && navigator.onLine === false) ||
+        /failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(msg)) {
+        return { message: "No internet connection. Please check your network and try again.", authExpired: false };
+    }
+    if (code === "23505") return { message: "This mobile number is already registered.", authExpired: false };
+    if (code === "PGRST301" || code === "PGRST303" || status === 401 || /jwt|token.*expired/i.test(msg)) {
+        return { message: "Your login has expired. Please login again.", authExpired: true };
+    }
+    if (code === "42501" || status === 403) {
+        return { message: "You do not have permission to do this. Please contact the admin.", authExpired: false };
+    }
+    return { message: fallback, authExpired: false };
+}
+
+const authService = {
+    async login(email, password) {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        return data.session;
+    },
+    async logout() {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            console.warn("Logout failed online, clearing this device only:", error);
+            await supabaseClient.auth.signOut({ scope: "local" });
+        }
+    }
+};
+
+const scheduleService = {
+    /** Default schedule for a date. The database stores ONLY the day of month. */
+    async getDailySchedule(isoDate) {
+        const day = getDatabaseDay(isoDate);
+        if (day === null) throw new Error("Invalid date: " + isoDate);
+        const { data, error } = await supabaseClient
+            .from("tbl_user_shift_mapping")
+            .select("id, shift, user_id, date, created_at, tbl_user ( " + USER_COLUMNS + " )")
+            .eq("date", day)
+            .order("created_at", { ascending: true });
+        if (error) throw error;
+        return buildDefaultSchedule(data || []);
+    }
+};
+
+const userService = {
+    async getUsers() {
+        const { data, error } = await supabaseClient
+            .from("tbl_user")
+            .select(USER_COLUMNS)
+            .order("gu_full_name");
+        if (error) throw error;
+        return (data || []).map(toFrontendUser);
+    },
+    async createUser({ name, enName, phone, leaderName }) {
+        const { data, error } = await supabaseClient
+            .from("tbl_user")
+            .insert({ gu_full_name: name, en_full_name: enName || null, mobile_number: phone, leader_name: leaderName || null })
+            .select(USER_COLUMNS)
+            .single();
+        if (error) throw error;
+        return toFrontendUser(data);
+    },
+    async updateUser(id, { name, enName, phone, leaderName }) {
+        const { data, error } = await supabaseClient
+            .from("tbl_user")
+            .update({ gu_full_name: name, en_full_name: enName || null, mobile_number: phone, leader_name: leaderName || null,
+                updated_at: new Date().toISOString() })
+            .eq("id", id)
+            .select(USER_COLUMNS)
+            .single();
+        if (error) throw error;
+        return toFrontendUser(data);
+    },
+    /** How many regular seva days this person has (deleting removes them too). */
+    async countAssignments(id) {
+        const { count, error } = await supabaseClient
+            .from("tbl_user_shift_mapping")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", id);
+        if (error) throw error;
+        return count || 0;
+    },
+    async deleteUser(id) {
+        const { error } = await supabaseClient.from("tbl_user").delete().eq("id", id);
+        if (error) throw error;
+    }
+};
+
+/** Regular schedule rows (tbl_user_shift_mapping). `day` = day of month 1–31. */
+const mappingService = {
+    /** Every row's shift + day, used to find days with blank shifts. */
+    async getAllDays() {
+        const { data, error } = await supabaseClient
+            .from("tbl_user_shift_mapping")
+            .select("shift, date");
+        if (error) throw error;
+        return data || [];
+    },
+    async getDay(day) {
+        const { data, error } = await supabaseClient
+            .from("tbl_user_shift_mapping")
+            .select("id, shift, user_id, date, created_at, tbl_user ( " + USER_COLUMNS + " )")
+            .eq("date", day)
+            .order("created_at", { ascending: true });
+        if (error) throw error;
+        return data || [];
+    },
+    /** Every row (paged, Supabase returns at most 1000 rows per request). */
+    async getAll() {
+        const PAGE = 1000;
+        const all = [];
+        for (let from = 0; ; from += PAGE) {
+            const { data, error } = await supabaseClient
+                .from("tbl_user_shift_mapping")
+                .select("id, shift, user_id, date, created_at")
+                .order("date", { ascending: true })
+                .order("created_at", { ascending: true })
+                .order("id", { ascending: true })
+                .range(from, from + PAGE - 1);
+            if (error) throw error;
+            all.push(...(data || []));
+            if (!data || data.length < PAGE) return all;
+        }
+    },
+    /** Insert one row and return it. */
+    async assign(day, shift, userId) {
+        const { data, error } = await supabaseClient
+            .from("tbl_user_shift_mapping")
+            .insert({ shift, user_id: userId, date: day })
+            .select("id, shift, user_id, date, created_at")
+            .single();
+        if (error) throw error;
+        return data;
+    },
+    /** Move a row to another day / shift. */
+    async move(mappingId, day, shift) {
+        const { data, error } = await supabaseClient
+            .from("tbl_user_shift_mapping")
+            .update({ date: day, shift })
+            .eq("id", mappingId)
+            .select("id");
+        if (error) throw error;
+        if (!data || !data.length) throw new Error("Row was not updated (deleted or not allowed).");
+    },
+    async remove(mappingId) {
+        const { data, error } = await supabaseClient.from("tbl_user_shift_mapping").delete().eq("id", mappingId).select("id");
+        if (error) throw error;
+        if (!data || !data.length) throw new Error("Row was not deleted (already gone or not allowed).");
+    }
+};
+
+
+/* =====================================================================
+ * 9. SMALL UI HELPERS (DOM built with textContent only → no XSS)
+ * ===================================================================== */
+const $ = (id) => document.getElementById(id);
+
+function el(tag, props, children) {
+    const node = document.createElement(tag);
+    Object.entries(props || {}).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === false) return;
+        if (key === "class") node.className = value;
+        else if (key === "text") node.textContent = value;
+        else if (key === "value") node.value = value;
+        else if (key === "dataset") Object.assign(node.dataset, value);
+        else if (key.startsWith("on") && typeof value === "function") node.addEventListener(key.slice(2), value);
+        else node.setAttribute(key, value === true ? "" : String(value));
+    });
+    [].concat(children == null ? [] : children).forEach((child) => {
+        if (child === null || child === undefined || child === false) return;
+        node.appendChild(typeof child === "string" ? document.createTextNode(child) : child);
+    });
+    return node;
+}
+
+/* WhatsApp logo (inline SVG, fixed markup — no user data) */
+function whatsappIcon() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "currentColor");
+    path.setAttribute("d", "M12.04 2a9.9 9.9 0 0 0-8.5 14.98L2 22l5.16-1.5A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.06.89.9-2.98-.2-.31a8.2 8.2 0 1 1 6.84 3.73Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.23-.08-.39-.12-.55.12-.16.25-.63.8-.78.97-.14.16-.29.18-.53.06a6.7 6.7 0 0 1-1.98-1.22 7.4 7.4 0 0 1-1.37-1.7c-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.12-.55-1.33-.76-1.82-.2-.48-.4-.41-.55-.42h-.47a.9.9 0 0 0-.65.31 2.7 2.7 0 0 0-.86 2.03c0 1.2.88 2.36 1 2.52.12.16 1.72 2.63 4.17 3.69.58.25 1.04.4 1.39.51.59.19 1.12.16 1.54.1.47-.07 1.46-.6 1.66-1.17.2-.58.2-1.07.15-1.17-.06-.1-.22-.17-.47-.29Z");
+    svg.appendChild(path);
+    return svg;
+}
+
+let toastTimer = null;
+/** toast(text, { type: "error", actionLabel, onAction, duration }) */
+function toast(message, opts) {
+    const o = opts || {};
+    const region = $("toast-region");
+    clearTimeout(toastTimer);
+    region.replaceChildren();
+    const box = el("div", { class: "toast" + (o.type === "error" ? " error" : "") }, [el("span", { text: message })]);
+    if (o.actionLabel && o.onAction) {
+        box.appendChild(el("button", {
+            type: "button", text: o.actionLabel,
+            onclick: () => { region.replaceChildren(); o.onAction(); }
+        }));
+    }
+    region.appendChild(box);
+    toastTimer = setTimeout(() => region.replaceChildren(), o.duration || (o.actionLabel ? 5000 : 2600));
+}
+
+/* ---------- Modal (native <dialog>: focus trap + Esc built in) ---------- */
+const modal = {
+    returnFocus: null,
+    _current: null,
+
+    /**
+     * open({ title, body: Node|Node[], actions: [{ label, kind, primary, onClick }], initialFocus })
+     * onClick may return false (keep open) or a Promise; buttons are disabled while it runs.
+     * Calling open() while open just swaps the content (used for multi-step sheets).
+     */
+    open(cfg) {
+        const dialog = $("modal");
+        if (!dialog.open) this.returnFocus = document.activeElement;
+
+        const buttons = [];
+        const run = async (action) => {
+            buttons.forEach((b) => { b.disabled = true; });
+            try {
+                const keepOpen = (await action.onClick()) === false;
+                if (!keepOpen && dialog.open && this._current === form) this.close();
+            } catch (e) {
+                console.error(e);
+                toast("Something went wrong. Please try again.", { type: "error" });
+            } finally {
+                buttons.forEach((b) => { b.disabled = false; });
+            }
+        };
+
+        const actions = (cfg.actions || []).map((a) => {
+            const b = el("button", {
+                type: a.primary ? "submit" : "button",
+                class: "btn " + (a.kind || "btn-secondary"),
+                text: a.label
+            });
+            if (!a.primary) b.addEventListener("click", () => (a.onClick ? run(a) : this.close()));
+            buttons.push(b);
+            return b;
+        });
+        const primary = (cfg.actions || []).find((a) => a.primary);
+
+        const form = el("form", { class: "modal-form", novalidate: true }, [
+            el("div", { class: "modal-header" }, [
+                el("h2", { id: "modal-title", text: cfg.title }),
+                el("button", { type: "button", class: "modal-close", "aria-label": "Close", title: "Close", text: "✕",
+                    onclick: () => this.close() })
+            ]),
+            el("div", { class: "modal-body" }, cfg.body),
+            actions.length ? el("div", { class: "modal-actions" }, actions) : null
+        ]);
+        form.addEventListener("submit", (e) => { e.preventDefault(); if (primary) run(primary); });
+        this._current = form;
+
+        dialog.replaceChildren(form);
+        if (!dialog.open) dialog.showModal();
+        const focusTarget = cfg.initialFocus || form.querySelector(".modal-body input, .modal-body button") || actions[0];
+        if (focusTarget) setTimeout(() => focusTarget.focus(), 0);
+    },
+
+    close() {
+        const dialog = $("modal");
+        if (dialog.open) dialog.close();
+    },
+
+    isOpen() { return $("modal").open; }
+};
+
+/* ---------- Clipboard with fallbacks ---------- */
+async function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        try { await navigator.clipboard.writeText(text); return true; } catch (e) { console.warn("Clipboard API failed:", e); }
+    }
+    try {
+        const helper = el("textarea", { class: "clip-helper", readonly: true, "aria-hidden": "true" });
+        helper.value = text;
+        document.body.appendChild(helper);
+        helper.select();
+        helper.setSelectionRange(0, text.length);
+        const ok = document.execCommand("copy");
+        helper.remove();
+        return ok;
+    } catch (e) {
+        console.warn("execCommand copy failed:", e);
+        return false;
+    }
+}
+
+
+/* =====================================================================
+ * 10. APP STATE
+ * ---------------------------------------------------------------------
+ * Each tab remembers its own date (Full Message → tomorrow, Shift Change
+ * → today). Both tabs read the SAME default schedule + overrides for a
+ * date, so a change in one tab is seen in the other for that date.
+ * ===================================================================== */
+const state = {
+    started: false,
+    tab: "full",
+    today: getTodayIST(),
+    tabDates: { full: null, change: null },
+    date: null,                // date of the active tab
+    defaultSchedule: null,     // frozen copy of the database schedule (never mutated)
+    override: {},              // this date's temporary overrides { shift4: [...] }
+    scheduleCache: new Map(),  // day-of-month → frozen default schedule
+    loading: false,
+    error: null,
+    loadSeq: 0,
+    users: [],
+    usersById: new Map(),
+    usersStatus: "idle",       // idle | loading | ready | error
+    usersPromise: null
+};
+
+function getCurrentSchedule() {
+    if (!state.defaultSchedule) return null;
+    return applyOverrides(state.defaultSchedule, state.override, state.usersById);
+}
+
+function getDefaultShift(shiftKey) {
+    return state.defaultSchedule.find((s) => s.shift === shiftKey);
+}
+
+function getCurrentShift(shiftKey) {
+    return getCurrentSchedule().find((s) => s.shift === shiftKey);
+}
+
+/** Shift Change message content: shifts with a person picked on the Shift Change tab. */
+function getShiftChangeEntries(date) {
+    const picked = changeStore.get(date || state.date);
+    return SHIFT_KEYS.map((k) => ({ ...createEmptyShift(k), users: picked[k] || [] }))
+        .filter((shift) => shift.users.length > 0);
+}
+
+function newTempId() {
+    return "tmp-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function findUserByPhone(phone) {
+    const key = phoneKey(phone);
+    return key ? state.users.find((u) => phoneKey(u.phone) === key) || null : null;
+}
+
+function shiftLabel(key) {
+    const c = SHIFT_CONFIG[key];
+    return "Shift " + c.number + " (" + c.start + " – " + c.end + ")";
+}
+
+
+/* =====================================================================
+ * 11. DATA LOADING
+ * ===================================================================== */
+function loadUsers(force) {
+    if (state.usersPromise && !force) return state.usersPromise;
+    state.usersStatus = "loading";
+    state.usersPromise = userService.getUsers()
+        .then((users) => {
+            state.users = users;
+            state.usersById = new Map(users.map((u) => [u.id, u]));
+            state.usersStatus = "ready";
+            if (state.started) renderAll();
+            return users;
+        })
+        .catch((e) => {
+            const f = friendlyError(e, "Could not load users.");
+            state.usersStatus = "error";
+            state.usersPromise = null;
+            if (f.authExpired) handleAuthExpired();
+            throw new Error(f.message);
+        });
+    return state.usersPromise;
+}
+
+/** Load the default schedule for state.date (cached per day-of-month unless force). */
+async function loadSchedule(force) {
+    const seq = ++state.loadSeq;
+    const date = state.date;
+    const day = getDatabaseDay(date);
+    state.error = null;
+    state.override = overrideStore.getDateOverride(date);
+
+    if (!force && state.scheduleCache.has(day)) {
+        state.defaultSchedule = state.scheduleCache.get(day);
+        state.loading = false;
+        dropRedundantOverrides();
+        renderAll();
+        return;
+    }
+
+    state.loading = true;
+    state.defaultSchedule = null;
+    renderAll();
+    try {
+        const schedule = deepFreeze(await scheduleService.getDailySchedule(date));
+        if (seq !== state.loadSeq) return;
+        state.scheduleCache.set(day, schedule);
+        state.defaultSchedule = schedule;
+        dropRedundantOverrides();
+    } catch (e) {
+        if (seq !== state.loadSeq) return;
+        const f = friendlyError(e, "Could not load the seva schedule. Please try again.");
+        state.error = f.message;
+        toast("Error loading schedule", { type: "error" });
+        if (f.authExpired) handleAuthExpired();
+    } finally {
+        if (seq === state.loadSeq) {
+            state.loading = false;
+            renderAll();
+        }
+    }
+}
+
+/** An override equal to the database list is not a change — remove it. */
+function dropRedundantOverrides() {
+    Object.keys(state.override).forEach((key) => {
+        const def = getDefaultShift(key);
+        if (def && areUserListsEqual(def.users, state.override[key])) {
+            overrideStore.removeShiftOverride(state.date, key);
+        }
+    });
+    state.override = overrideStore.getDateOverride(state.date);
+}
+
+
+/* =====================================================================
+ * 12. SCHEDULE CHANGES (localStorage only — Supabase is never touched)
+ * ===================================================================== */
+
+/**
+ * Set the complete user list for one or more shifts: { shift4: [...], shift5: [...] }.
+ * Returns true when saved on the device (false = only in memory, warning shown).
+ */
+function setShiftsUsers(changes) {
+    let saved = true;
+    Object.keys(changes).forEach((key) => {
+        const users = changes[key];
+        const def = getDefaultShift(key);
+        if (def && areUserListsEqual(def.users, users)) {
+            saved = overrideStore.removeShiftOverride(state.date, key) && saved;   // back to the original
+        } else {
+            saved = overrideStore.setShiftOverride(state.date, key, users) && saved;
+        }
+    });
+    state.override = overrideStore.getDateOverride(state.date);
+    if (!saved) warnStorageProblem();
+    renderAll();
+    return saved;
+}
+
+function warnStorageProblem() {
+    const msg = overrideStore.getLastError() === "full"
+        ? "Browser storage is full. This change works now but may be lost after refresh."
+        : "This browser could not save the change. It works now but will be lost after refresh.";
+    toast(msg, { type: "error", duration: 5000 });
+}
+
+function restoreShift(shiftKey) {
+    const ok = overrideStore.removeShiftOverride(state.date, shiftKey);
+    state.override = overrideStore.getDateOverride(state.date);
+    renderAll();
+    if (ok) toast("Shift restored ✓"); else warnStorageProblem();
+}
+
+function removeUser(shiftKey, index) {
+    const before = getCurrentShift(shiftKey).users;
+    if (!before[index]) return;
+    if (!setShiftsUsers({ [shiftKey]: before.filter((_, i) => i !== index) })) return;
+    toast("User removed ✓", {
+        actionLabel: "Undo",
+        onAction: () => { if (setShiftsUsers({ [shiftKey]: before })) toast("Change saved ✓"); }
+    });
+}
+
+function focusLater(selector) {
+    setTimeout(() => {
+        const target = document.querySelector(selector);
+        if (target && !modal.isOpen()) target.focus();
+    }, 30);
+}
+
+
+/* =====================================================================
+ * 13. RENDERING
+ * ===================================================================== */
+function renderAll() {
+    if (!state.started) return;
+    renderTabs();
+    renderDateBar();
+    renderPanel();
+    renderCopyButton();
+    if (regular.open) renderRegular();      // users list may have been reloaded
+}
+
+function renderTabs() {
+    ["full", "change"].forEach((tab) => {
+        const btn = $("tab-" + tab);
+        const active = state.tab === tab;
+        btn.setAttribute("aria-selected", String(active));
+        btn.tabIndex = active ? 0 : -1;
+    });
+    $("panel").setAttribute("aria-labelledby", "tab-" + state.tab);
+    // Badge = number of shifts in the Shift Change message for that tab's date
+    const count = getShiftChangeEntries(state.tabDates.change).length;
+    const badge = $("change-count");
+    badge.hidden = count === 0;
+    badge.textContent = String(count);
+    $("tab-change").setAttribute("aria-label", "Shift Change" + (count ? ", " + count + " changed" : ""));
+}
+
+function relativeDayLabel(date) {
+    if (date === state.today) return "Today";
+    if (date === addDays(state.today, 1)) return "Tomorrow";
+    if (date === addDays(state.today, -1)) return "Yesterday";
+    return "";
+}
+
+function renderDateBar() {
+    $("date-label").textContent = formatDateWithDay(state.date);
+    if ($("date-input").value !== state.date) $("date-input").value = state.date;
+    const rel = relativeDayLabel(state.date);
+    $("date-chip").hidden = !rel;
+    $("date-chip").textContent = rel;
+    $("date-input").setAttribute("aria-label", "Date: " + formatDisplayDate(state.date) + (rel ? " (" + rel + ")" : "") + ". Change date");
+}
+
+function renderPanel() {
+    const panel = $("panel");
+    if (state.loading) {
+        const rel = relativeDayLabel(state.date);
+        const label = rel === "Today" ? "Loading today's seva schedule..."
+            : rel === "Tomorrow" ? "Loading tomorrow's seva schedule..."
+            : "Loading seva schedule for " + formatDisplayDate(state.date) + "...";
+        panel.replaceChildren(
+            el("p", { class: "loading-text", role: "status", text: label }),
+            el("div", { class: "skeleton", "aria-hidden": "true" })
+        );
+        return;
+    }
+    if (state.error) {
+        panel.replaceChildren(el("div", { class: "state-card error", role: "alert" }, [
+            el("h3", { text: "⚠ Could not load the schedule" }),
+            el("p", { text: state.error }),
+            el("button", { type: "button", class: "btn btn-primary", "data-action": "retry", text: "↻ Try Again" })
+        ]));
+        return;
+    }
+    if (!state.defaultSchedule) { panel.replaceChildren(); return; }
+    if (state.tab === "full") renderFullPanel(panel); else renderChangePanel(panel);
+}
+
+/* ---------- Full Message: the message itself, with actions per line ---------- */
+function renderFullPanel(panel) {
+    const current = getCurrentSchedule();
+    const changedKeys = new Set(compareSchedules(state.defaultSchedule, current).map((s) => s.shift));
+    const nothingInDb = state.defaultSchedule.every((s) => s.users.length === 0);
+    const overrideCount = Object.keys(state.override).length;
+
+    const day = getDatabaseDay(state.date);
+    const card = el("section", { class: "msg-card", "aria-label": "WhatsApp message" }, [
+        el("div", { class: "msg-head" }, [
+            el("div", { class: "msg-head-text" },
+                MESSAGE_TEMPLATES.fullHeader(formatDateWithDay(state.date)).split("\n").map((line) => el("p", { text: line }))),
+            overrideCount ? el("div", { class: "msg-head-actions" }, [
+                el("button", { type: "button", class: "btn btn-quiet", "data-action": "reset-day", text: "↻ Reset Day" })
+            ]) : null
+        ]),
+        overrideCount ? el("p", { class: "msg-note", text: "⚡ Changed only on this device for " + formatDisplayDate(state.date) }) : null,
+        el("div", { class: "msg-grid" },
+            current.map((shift) => renderMessageShift(shift, { mode: "full", changed: changedKeys.has(shift.shift) })))
+    ]);
+
+    panel.replaceChildren(...[
+        nothingInDb ? el("p", { class: "banner compact", text: "No one is in the regular list for day " + day + ". Use + for this date, or 📅 to fill the regular list." }) : null,
+        card
+    ].filter(Boolean));
+}
+
+/* ---------- Shift Change: all six shifts, tap a shift to select who comes ---------- */
+function renderChangePanel(panel) {
+    const picked = changeStore.get(state.date);
+    const card = el("section", { class: "msg-card", "aria-label": "Shift change message" }, [
+        el("div", { class: "msg-head" }, [el("p", { text: MESSAGE_TEMPLATES.shiftChangeHeader })]),
+        el("div", { class: "msg-grid change-list" }, SHIFT_KEYS.map((k) => {
+            const shift = { ...createEmptyShift(k), users: picked[k] || [] };
+            return el("div", { class: "msg-shift" + (shift.users.length ? "" : " is-unselected"), "data-shift-block": k }, [
+                el("p", { class: "msg-shift-title", text: MESSAGE_TEMPLATES.shiftHeading(shift) }),
+                shift.users.length                     // selected → ✏️ on the line; empty → "+ Select person"
+                    ? el("ul", { class: "msg-lines" }, shift.users.map((u) => renderMessageLine(shift, u, -1, "change", false)))
+                    : el("button", { type: "button", class: "select-btn", "data-action": "change-add", "data-shift": k,
+                        "data-focus": "change-add-" + k, "aria-label": "Select person for Shift " + shift.shiftNumber, text: "+ Select person" })
+            ]);
+        }))
+    ]);
+    panel.replaceChildren(card,
+        el("p", { class: "change-hint", text: "Saved only on this device. Only shifts with a selected person are copied." }));
+}
+
+/** One shift block, written exactly like the WhatsApp text, plus buttons. */
+function renderMessageShift(shift, opts) {
+    const def = getDefaultShift(shift.shift);
+    const defaultUsers = def ? def.users : [];
+    const lines = shift.users.length
+        ? el("ul", { class: "msg-lines" }, shift.users.map((u, i) =>
+            renderMessageLine(shift, u, i, opts.mode, !defaultUsers.some((d) => userIdentity(d) === userIdentity(u)))))
+        : el("p", { class: "msg-empty", lang: "gu", text: MESSAGE_TEMPLATES.emptyShiftUi });
+
+    const restore = shift.hasOverride
+        ? el("button", { type: "button", class: "round-btn restore", "data-action": "restore-shift", "data-shift": shift.shift,
+            title: "Restore the regular list", "aria-label": "Restore Shift " + shift.shiftNumber + " to the regular list", text: "↺" })
+        : null;
+
+    const cls = "msg-shift" + (opts.changed ? " is-changed" : "") + (shift.users.length ? "" : " is-blank");
+    return el("div", { class: cls, "data-shift-block": shift.shift }, [
+        el("div", { class: "msg-shift-head" }, [
+            el("p", { class: "msg-shift-title", text: MESSAGE_TEMPLATES.shiftHeading(shift) }),
+            el("div", { class: "head-actions" }, [restore])
+        ]),
+        lines
+    ]);
+}
+
+/** One message line "• Name- phone" with ✏️ / WhatsApp / 📞 buttons. */
+function renderMessageLine(shift, user, index, mode, isNew) {
+    const name = normalizeName(user.name);
+    const waUrl = buildWhatsAppUrl(user.phone, generateUserWhatsAppMessage(user, shift, state.date));
+    const telUrl = buildTelUrl(user.phone);
+    const actions = [];
+
+    if (mode === "change") {
+        actions.push(el("button", { type: "button", class: "icon-btn", "data-action": "change-edit", "data-shift": shift.shift,
+            "data-key": userIdentity(user), "data-focus": "change-edit-" + shift.shift, title: "Change person",
+            "aria-label": "Change " + name + " in Shift " + shift.shiftNumber, text: "✏️" }));
+    }
+    if (mode === "full") {
+        actions.push(el("button", { type: "button", class: "icon-btn", "data-action": "edit-user", "data-shift": shift.shift,
+            "data-index": String(index), title: "Change / remove person", "aria-label": "Change or remove " + name + " in Shift " + shift.shiftNumber, text: "✏️" }));
+    }
+    actions.push(waUrl
+        ? el("a", { class: "icon-btn wa", href: waUrl, target: "_blank", rel: "noopener noreferrer",
+            title: "WhatsApp " + name, "aria-label": "WhatsApp " + name }, [whatsappIcon()])
+        : el("button", { type: "button", class: "icon-btn wa", "aria-disabled": "true", "data-action": "bad-phone",
+            title: "Mobile number not valid", "aria-label": "WhatsApp " + name + " (mobile number not valid)" }, [whatsappIcon()]));
+    actions.push(telUrl
+        ? el("a", { class: "icon-btn", href: telUrl, title: "Call " + name, "aria-label": "Call " + name, text: "📞" })
+        : el("button", { type: "button", class: "icon-btn", "aria-disabled": "true", "data-action": "bad-phone",
+            title: "Mobile number not valid", "aria-label": "Call " + name + " (mobile number not valid)", text: "📞" }));
+    if (mode === "change") {
+        actions.push(el("button", { type: "button", class: "icon-btn remove", "data-action": "change-remove", "data-shift": shift.shift,
+            "data-key": userIdentity(user), title: "Remove", "aria-label": "Remove " + name + " from Shift " + shift.shiftNumber, text: "✕" }));
+    }
+
+    return el("li", { class: "msg-line" + (isNew ? " is-new" : "") }, [
+        el("p", { class: "line-text" }, [
+            "• " + name + "- ",
+            el("span", { class: "line-phone", text: displayPhone(user.phone) }),
+            user.temporary ? " " : null,
+            user.temporary ? el("span", { class: "line-tag", text: "temp" }) : null
+        ]),
+        el("div", { class: "line-actions" }, actions)
+    ]);
+}
+
+function getActiveMessage() {
+    if (!state.defaultSchedule || state.loading || state.error) return "";
+    return state.tab === "full"
+        ? generateFullMessage(getCurrentSchedule(), state.date)
+        : generateShiftChangeMessage(getShiftChangeEntries(), state.date);
+}
+
+function renderCopyButton() {
+    const btn = $("copy-btn");
+    const text = getActiveMessage();
+    btn.textContent = state.tab === "full" ? "📋 Copy Message" : (text ? "📋 Copy Shift Change Message" : "No shift change to copy");
+    btn.disabled = !text;
+}
+
+
+/* =====================================================================
+ * 14. PEOPLE PICKER — search by name / mobile, tap a name to choose it
+ * ---------------------------------------------------------------------
+ * createUserPicker({ blockedReason(user) → string|null, onPick(user) → error string|undefined })
+ * ===================================================================== */
+function createUserPicker(opts) {
+    const o = opts || {};
+    let tempOpen = false;
+
+    const search = el("input", {
+        class: "input", type: "search", placeholder: "Search ગુજરાતી / English name or mobile...",
+        autocomplete: "off", "aria-label": "Search Gujarati or English name or mobile", enterkeyhint: "search"
+    });
+    const status = el("p", { class: "pick-status", role: "status" });
+    const list = el("div", { class: "pick-list", role: "group", "aria-label": "People" });
+    const errorBox = el("p", { class: "field-error", role: "alert" });
+
+    const tempName = el("input", { class: "input", id: "temp-name", autocomplete: "off", maxlength: "150" });
+    const tempPhone = el("input", { class: "input", id: "temp-phone", type: "tel", inputmode: "tel", autocomplete: "off",
+        maxlength: "20", placeholder: "+91 98765 43210" });
+    const tempAdd = el("button", { type: "button", class: "btn btn-primary btn-block", text: "Use this person" });
+    const tempBox = el("div", { class: "temp-box", hidden: true }, [
+        el("p", { text: "Only for this date. Not saved in the users list." }),
+        el("div", { class: "field" }, [el("label", { for: "temp-name", text: "Name" }), tempName]),
+        el("div", { class: "field" }, [el("label", { for: "temp-phone", text: "Mobile Number" }), tempPhone]),
+        tempAdd
+    ]);
+    const tempToggle = el("button", { type: "button", class: "btn btn-secondary btn-block", "aria-expanded": "false",
+        text: "+ New person (temporary)" });
+
+    function setError(message, field) {
+        errorBox.textContent = message || "";
+        [tempName, tempPhone].forEach((f) => f.removeAttribute("aria-invalid"));
+        if (field) { field.setAttribute("aria-invalid", "true"); field.focus(); }
+    }
+
+    function pick(user) {
+        const err = o.onPick(user);
+        if (err && typeof err.then === "function") err.then((m) => { if (m) setError(m); });
+        else if (err) setError(err);
+    }
+
+    function renderList() {
+        if (state.usersStatus === "loading" || state.usersStatus === "idle") {
+            status.textContent = "Loading users...";
+            list.replaceChildren();
+            return;
+        }
+        if (state.usersStatus === "error") {
+            status.textContent = "Could not load users. You can still add a new person.";
+            list.replaceChildren(el("button", { type: "button", class: "btn btn-secondary btn-sm", text: "↻ Try Again",
+                onclick: () => { loadUsers(true).catch(() => {}).finally(renderList); renderList(); } }));
+            return;
+        }
+        const q = search.value.trim();
+        const found = state.users.filter((u) => userMatchesQuery(u, q));
+        status.textContent = state.users.length === 0
+            ? (o.allowTemp === false ? "No users saved yet. Add people from 👥 first." : "No users saved yet. Add a new person below, or add people from 👥.")
+            : found.length === 0 ? "No match for “" + q + "”." : "";
+
+        list.replaceChildren(...found.map((u) => {
+            const reason = o.blockedReason ? o.blockedReason(u) : null;
+            return el("button", {
+                type: "button", class: "pick-item", disabled: !!reason,
+                "aria-label": "Choose " + u.name + ", " + displayPhone(u.phone) + (reason ? " (" + reason + ")" : ""),
+                onclick: () => pick({ ...u })
+            }, [
+                el("span", {}, [
+                    el("span", { class: "pick-name", text: u.name }), el("br"),
+                    el("span", { class: "pick-sub", text: [u.enName, displayPhone(u.phone), u.leaderName].filter(Boolean).join(" · ") })
+                ]),
+                reason ? el("span", { class: "pick-tag", text: reason }) : el("span", { class: "pick-go", "aria-hidden": "true", text: "›" })
+            ]);
+        }));
+    }
+
+    function submitTemp() {
+        const name = normalizeName(tempName.value);
+        const rawPhone = tempPhone.value.trim();
+        if (!name) return setError("Please enter the name.", tempName);
+        if (name.length > 150) return setError("Name is too long (maximum 150 letters).", tempName);
+        if (!rawPhone) return setError("Please enter the mobile number.", tempPhone);
+        const phone = normalizePhone(rawPhone);
+        if (!phone) return setError("Please enter a valid mobile number, for example +91 98765 43210.", tempPhone);
+        const existing = findUserByPhone(phone);
+        pick(existing ? { ...existing } : { id: newTempId(), name, phone, leaderName: "", temporary: true });
+    }
+
+    tempToggle.addEventListener("click", () => {
+        tempOpen = !tempOpen;
+        tempBox.hidden = !tempOpen;
+        tempToggle.setAttribute("aria-expanded", String(tempOpen));
+        setError("");
+        if (tempOpen) tempName.focus();
+    });
+    tempAdd.addEventListener("click", submitTemp);
+    [tempName, tempPhone].forEach((f) => f.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); submitTemp(); }
+    }));
+    search.addEventListener("input", renderList);
+    search.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        const enabled = Array.from(list.querySelectorAll(".pick-item:not(:disabled)"));
+        if (enabled.length === 1) enabled[0].click();
+    });
+
+    if (state.usersStatus !== "ready") loadUsers().catch(() => {}).finally(renderList);
+    renderList();
+
+    return {
+        node: el("div", { class: "picker" }, o.allowTemp === false
+            ? [search, status, list, errorBox]                       // regular list: saved users only
+            : [search, status, list, el("div", { class: "divider", text: "or" }), tempToggle, tempBox, errorBox]),
+        search,
+        setError
+    };
+}
+
+
+/* =====================================================================
+ * 15. MODAL FLOWS
+ * ===================================================================== */
+const DUPLICATE_MESSAGE = "This user is already assigned to this shift.";
+
+/** Full Message → "+ Add" on a shift heading */
+function openAddUser(shiftKey) {
+    const shift = getCurrentShift(shiftKey);
+    const picker = createUserPicker({
+        blockedReason: (u) => isUserInList(getCurrentShift(shiftKey).users, u) ? "Already in this shift" : null,
+        onPick: (user) => {
+            const users = getCurrentShift(shiftKey).users;
+            if (isUserInList(users, user)) return DUPLICATE_MESSAGE;
+            modal.close();
+            if (setShiftsUsers({ [shiftKey]: users.concat([user]) })) toast(normalizeName(user.name) + " added ✓");
+            focusLater('[data-focus="add-' + shiftKey + '"]');
+        }
+    });
+    modal.open({
+        title: "Add person · Shift " + shift.shiftNumber,
+        body: [el("p", { class: "modal-text", text: shift.start + " to " + shift.end + " · " + formatDateWithDay(state.date) }), picker.node],
+        initialFocus: picker.search,
+        actions: [{ label: "Cancel" }]
+    });
+}
+
+/** Full Message → ✏️ on a person: tap another person to replace, or remove */
+function openEditUser(shiftKey, index) {
+    const shift = getCurrentShift(shiftKey);
+    const user = shift.users[index];
+    if (!user) return;
+
+    const picker = createUserPicker({
+        blockedReason: (u) => userIdentity(u) === userIdentity(user) ? "Current"
+            : isUserInList(getCurrentShift(shiftKey).users, u) ? "Already in this shift" : null,
+        onPick: (newUser) => {
+            const users = getCurrentShift(shiftKey).users;
+            if (isUserInList(users.filter((_, i) => i !== index), newUser)) return DUPLICATE_MESSAGE;
+            const next = users.slice();
+            next[index] = newUser;
+            modal.close();
+            if (setShiftsUsers({ [shiftKey]: next })) toast("Changed to " + normalizeName(newUser.name) + " ✓");
+        }
+    });
+
+    modal.open({
+        title: "Change person · Shift " + shift.shiftNumber,
+        body: [
+            el("div", { class: "current-box" }, [
+                el("span", { text: "Now: " }),
+                el("strong", { text: user.name }), " ",
+                el("span", { text: displayPhone(user.phone) })
+            ]),
+            el("p", { class: "modal-text", text: "Tap the person who will come instead:" }),
+            picker.node
+        ],
+        initialFocus: picker.search,
+        actions: [
+            { label: "🗑 Remove", kind: "btn-danger-quiet", onClick: () => { modal.close(); removeUser(shiftKey, index); } },
+            { label: "Cancel" }
+        ]
+    });
+}
+
+function setChangeUsers(shiftKey, users) {
+    const ok = changeStore.setShift(state.date, shiftKey, users);
+    if (!ok) toast("This browser could not save the change. It works now but will be lost after refresh.", { type: "error", duration: 5000 });
+    renderAll();
+    return ok;
+}
+
+/** Shift Change tab → "+ Select person" under a shift */
+function openChangeAdd(shiftKey) {
+    const c = SHIFT_CONFIG[shiftKey];
+    const pickedNow = () => changeStore.get(state.date)[shiftKey] || [];
+    const picker = createUserPicker({
+        blockedReason: (u) => isUserInList(pickedNow(), u) ? "Already selected" : null,
+        onPick: (user) => {
+            const users = pickedNow();
+            if (isUserInList(users, user)) return DUPLICATE_MESSAGE;
+            modal.close();
+            setChangeUsers(shiftKey, users.concat([user]));
+            toast(normalizeName(user.name) + " selected ✓");
+            focusLater('[data-focus="change-add-' + shiftKey + '"]');
+        }
+    });
+    modal.open({
+        title: "Select person · Shift " + c.number,
+        body: [el("p", { class: "modal-text", text: c.start + " to " + c.end + " · " + formatDateWithDay(state.date) }), picker.node],
+        initialFocus: picker.search,
+        actions: [{ label: "Cancel" }]
+    });
+}
+
+/** Shift Change tab → ✏️ on a selected person: pick someone else instead, or remove */
+function openChangeEdit(shiftKey, identity) {
+    const c = SHIFT_CONFIG[shiftKey];
+    const pickedNow = () => changeStore.get(state.date)[shiftKey] || [];
+    const user = pickedNow().find((u) => userIdentity(u) === identity);
+    if (!user) return;
+
+    const picker = createUserPicker({
+        blockedReason: (u) => userIdentity(u) === identity || (!u.temporary && u.id === user.id) ? "Current"
+            : isUserInList(pickedNow(), u) ? "Already selected" : null,
+        onPick: (newUser) => {
+            const users = pickedNow();
+            const index = users.findIndex((u) => userIdentity(u) === identity);
+            if (index < 0) { modal.close(); return; }
+            if (isUserInList(users.filter((_, i) => i !== index), newUser)) return DUPLICATE_MESSAGE;
+            users[index] = newUser;
+            modal.close();
+            setChangeUsers(shiftKey, users);
+            toast("Changed to " + normalizeName(newUser.name) + " ✓");
+            focusLater('[data-focus="change-edit-' + shiftKey + '"]');
+        }
+    });
+    modal.open({
+        title: "Change person · Shift " + c.number,
+        body: [
+            el("div", { class: "current-box" }, [
+                el("span", { text: "Now: " }), el("strong", { text: user.name }), " ", el("span", { text: displayPhone(user.phone) })
+            ]),
+            el("p", { class: "modal-text", text: "Tap the person who will come instead:" }),
+            picker.node
+        ],
+        initialFocus: picker.search,
+        actions: [
+            { label: "🗑 Remove", kind: "btn-danger-quiet", onClick: () => { modal.close(); removeChangeUser(shiftKey, identity); } },
+            { label: "Cancel" }
+        ]
+    });
+}
+
+/** Shift Change tab → ✕ on a selected person */
+function removeChangeUser(shiftKey, identity) {
+    const before = changeStore.get(state.date)[shiftKey] || [];
+    setChangeUsers(shiftKey, before.filter((u) => userIdentity(u) !== identity));
+    toast("Removed ✓", { actionLabel: "Undo", onAction: () => setChangeUsers(shiftKey, before) });
+}
+
+function openResetDay() {
+    modal.open({
+        title: "Reset " + formatDisplayDate(state.date) + "?",
+        body: [
+            el("p", { class: "modal-text", text: "This will remove all temporary changes for this date." }),
+            el("p", { class: "modal-text", text: "Your Supabase data will not be changed." })
+        ],
+        actions: [
+            { label: "Cancel" },
+            { label: "Reset Day", kind: "btn-danger", primary: true, onClick: () => {
+                const saved = overrideStore.resetDay(state.date);
+                state.override = {};
+                loadSchedule(true).then(() => {
+                    if (!saved) warnStorageProblem();
+                    else if (!state.error) toast("Day reset ✓");
+                });
+            } }
+        ]
+    });
+}
+
+function openManualCopy(text) {
+    const box = el("textarea", { class: "input manual-copy", readonly: true, "aria-label": "Message text" });
+    box.value = text;
+    modal.open({
+        title: "Copy the message",
+        body: [el("p", { class: "modal-text", text: "Automatic copy is not available here. The text is selected — press Copy (or long-press → Copy)." }), box],
+        initialFocus: box,
+        actions: [{ label: "Close" }]
+    });
+    setTimeout(() => { box.focus(); box.select(); }, 50);
+}
+
+
+/* ---------------------- Manage Users (permanent) ---------------------- */
+function openManageUsers(query) {
+    const search = el("input", { class: "input", type: "search", placeholder: "Search ગુજરાતી / English name or mobile...",
+        "aria-label": "Search users", value: query || "" });
+    const listWrap = el("div");
+
+    function renderUsersList() {
+        if (state.usersStatus !== "ready") {
+            const failed = state.usersStatus === "error";
+            listWrap.replaceChildren(el("p", { class: "pick-status", role: "status",
+                text: failed ? "Could not load users." : "Loading users..." }),
+                failed ? el("button", { type: "button", class: "btn btn-secondary btn-sm", text: "↻ Try Again",
+                    onclick: () => { loadUsers(true).catch(() => {}).finally(renderUsersList); renderUsersList(); } }) : null);
+            return;
+        }
+        const found = state.users.filter((u) => userMatchesQuery(u, search.value));
+        if (!found.length) {
+            listWrap.replaceChildren(el("p", { class: "pick-status", text: state.users.length ? "No match." : "No users yet. Add the first person." }));
+            return;
+        }
+        listWrap.replaceChildren(el("ul", { class: "manage-list" }, found.map((u) => el("li", { class: "manage-item" }, [
+            el("div", {}, [
+                el("p", { class: "pick-name", text: u.name }),
+                el("p", { class: "pick-sub", text: [u.enName, displayPhone(u.phone), u.leaderName ? "Leader: " + u.leaderName : ""].filter(Boolean).join(" · ") })
+            ]),
+            el("div", { class: "manage-actions" }, [
+                el("button", { type: "button", class: "icon-btn", title: "Edit", "aria-label": "Edit " + u.name, text: "✏️",
+                    onclick: () => openUserForm(u, search.value) }),
+                el("button", { type: "button", class: "icon-btn", title: "Delete", "aria-label": "Delete " + u.name, text: "🗑",
+                    onclick: () => openDeleteUser(u, search.value) })
+            ])
+        ]))));
+    }
+
+    search.addEventListener("input", renderUsersList);
+    if (state.usersStatus !== "ready") loadUsers().catch(() => {}).finally(renderUsersList);
+    renderUsersList();
+
+    modal.open({
+        title: "👥 Users",
+        body: [
+            el("p", { class: "modal-text", text: "People saved here can be selected on any day." }),
+            el("div", { class: "users-toolbar" }, [
+                search,
+                el("button", { type: "button", class: "btn btn-primary", text: "+ Add Person", onclick: () => openUserForm(null, search.value) })
+            ]),
+            listWrap
+        ],
+        initialFocus: search,
+        actions: [{ label: "Close" }]
+    });
+}
+
+function openUserForm(user, returnQuery) {
+    const isEdit = !!user;
+    const name = el("input", { class: "input", id: "uf-name", maxlength: "150", autocomplete: "off", lang: "gu",
+        placeholder: "દા.ત. અનિલ જીવાણી", value: isEdit ? user.name : "" });
+    const enName = el("input", { class: "input", id: "uf-en-name", maxlength: "150", autocomplete: "off", lang: "en",
+        placeholder: "e.g. Anil Jivani", value: isEdit ? user.enName : "" });
+    const phone = el("input", { class: "input", id: "uf-phone", type: "tel", inputmode: "tel", maxlength: "20", autocomplete: "off",
+        placeholder: "+91 98765 43210", value: isEdit ? displayPhone(user.phone) : "" });
+    const leader = el("input", { class: "input", id: "uf-leader", maxlength: "150", autocomplete: "off", value: isEdit ? user.leaderName : "" });
+    const errorBox = el("p", { class: "field-error", role: "alert" });
+
+    const fail = (message, field) => {
+        errorBox.textContent = message;
+        [name, enName, phone].forEach((f) => f.removeAttribute("aria-invalid"));
+        if (field) { field.setAttribute("aria-invalid", "true"); field.focus(); }
+        return false;
+    };
+
+    modal.open({
+        title: isEdit ? "Edit Person" : "Add Person",
+        body: [
+            el("div", { class: "field" }, [el("label", { for: "uf-name" }, ["Gujarati Full Name (shown in messages) ", el("span", { class: "required", text: "*" })]), name]),
+            el("div", { class: "field" }, [el("label", { for: "uf-en-name", text: "English Full Name (for search)" }), enName]),
+            el("div", { class: "field" }, [el("label", { for: "uf-phone" }, ["Mobile Number ", el("span", { class: "required", text: "*" })]), phone]),
+            el("div", { class: "field" }, [el("label", { for: "uf-leader", text: "Leader Name" }), leader]),
+            errorBox
+        ],
+        initialFocus: name,
+        actions: [
+            { label: "Back", onClick: () => { openManageUsers(returnQuery); return false; } },
+            { label: isEdit ? "Save" : "Add Person", kind: "btn-primary", primary: true, onClick: async () => {
+                const cleanName = normalizeName(name.value);
+                const cleanEnName = normalizeName(enName.value);
+                const cleanLeader = normalizeName(leader.value);
+                if (!cleanName) return fail("Please enter the Gujarati full name.", name);
+                if (!phone.value.trim()) return fail("Please enter the mobile number.", phone);
+                const cleanPhone = normalizePhone(phone.value);
+                if (!cleanPhone) return fail("Please enter a valid mobile number, for example +91 98765 43210.", phone);
+                const clash = findUserByPhone(cleanPhone);
+                if (clash && (!isEdit || clash.id !== user.id)) return fail("This mobile number is already registered.", phone);
+
+                try {
+                    const payload = { name: cleanName, enName: cleanEnName, phone: cleanPhone, leaderName: cleanLeader };
+                    if (isEdit) await userService.updateUser(user.id, payload);
+                    else await userService.createUser(payload);
+                } catch (e) {
+                    const f = friendlyError(e, "Could not save. Please try again.");
+                    if (f.authExpired) handleAuthExpired();
+                    return fail(f.message);
+                }
+                await loadUsers(true).catch(() => {});
+                if (isEdit) { state.scheduleCache.clear(); loadSchedule(true); }   // names/phones may have changed
+                toast(isEdit ? "Change saved ✓" : "User added ✓");
+                openManageUsers(returnQuery);
+                return false;                        // stay in the Users window
+            } }
+        ]
+    });
+}
+
+async function openDeleteUser(user, returnQuery) {
+    let count = null;
+    try { count = await userService.countAssignments(user.id); } catch (e) { friendlyError(e, "Could not count assignments."); }
+
+    const lines = [el("p", { class: "modal-text" }, ["Delete ", el("strong", { text: user.name }), " (" + displayPhone(user.phone) + ") from the users list?"])];
+    if (count === null) {
+        lines.push(el("p", { class: "banner", text: "If this person is in the regular seva list, they will be removed from it too." }));
+    } else if (count > 0) {
+        lines.push(el("p", { class: "banner", text: "⚠ This person is in the regular seva list " + count +
+            (count === 1 ? " time" : " times") + ". Deleting will also remove them from the regular list." }));
+    }
+    lines.push(el("p", { class: "modal-text", text: "This cannot be undone." }));
+
+    modal.open({
+        title: "Delete Person?",
+        body: lines,
+        actions: [
+            { label: "Cancel", onClick: () => { openManageUsers(returnQuery); return false; } },
+            { label: "Delete Person", kind: "btn-danger", primary: true, onClick: async () => {
+                try {
+                    await userService.deleteUser(user.id);
+                } catch (e) {
+                    const f = friendlyError(e, "Could not delete. Please try again.");
+                    if (f.authExpired) handleAuthExpired();
+                    toast(f.message, { type: "error" });
+                    return false;
+                }
+                await loadUsers(true).catch(() => {});
+                state.scheduleCache.clear();
+                loadSchedule(true);
+                toast("User deleted ✓");
+                openManageUsers(returnQuery);
+                return false;
+            } }
+        ]
+    });
+}
+
+
+/* =====================================================================
+ * 15b. REGULAR SCHEDULE — 31 days × 6 shifts (writes to Supabase)
+ * ---------------------------------------------------------------------
+ * Full-screen table of tbl_user_shift_mapping:
+ *   tap a box                    → modal: add / remove people in that box
+ *   tap a person in a box        → modal: change that person (or remove)
+ *   drag a person (People list)  → box: assign
+ *   drag a person (from a box)   → other box: move,  → 🗑: remove
+ *   tap a person in People list  → then tap boxes to assign quickly (phones)
+ * Changes are optimistic: the table updates at once and rolls back on error.
+ * ===================================================================== */
+const TABLE_DAYS = 31;
+const regular = {
+    open: false,
+    status: "idle",        // idle | loading | ready | error
+    error: "",
+    rows: [],              // { id, date, shift, user_id, pending? }
+    armedUserId: null,     // People-list person picked for tap-to-assign (string key)
+    dirty: false,          // Supabase changed → reload the message screen on close
+    seq: 0
+};
+
+function normalizeMappingRow(row) {
+    const shift = String((row && row.shift) || "").trim().toLowerCase();
+    const date = Number(row && row.date);
+    if (!SHIFT_CONFIG[shift] || !(date >= 1 && date <= TABLE_DAYS)) return null;
+    return { id: row.id, date, shift, user_id: row.user_id };
+}
+
+const sameId = (a, b) => String(a) === String(b);
+function regularCell(day, shiftKey) { return regular.rows.filter((r) => r.date === day && r.shift === shiftKey); }
+function regularRowById(id) { return regular.rows.find((r) => sameId(r.id, id)) || null; }
+function regularUser(id) { return state.users.find((u) => sameId(u.id, id)) || null; }
+function regularLabel(day, shiftKey) { return "Day " + day + " · Shift " + SHIFT_CONFIG[shiftKey].number; }
+function regularHasUser(day, shiftKey, userId) { return regularCell(day, shiftKey).some((r) => sameId(r.user_id, userId)); }
+function regularUserName(id) { const u = regularUser(id); return u ? normalizeName(u.name) : "Unknown person"; }
+
+function regularFail(e, fallback) {
+    if (e && e.code === "23505") { toast("This person is already in that box.", { type: "error" }); return; }
+    const f = friendlyError(e, fallback);
+    toast(f.message, { type: "error", duration: 4000 });
+    if (f.authExpired) handleAuthExpired();
+}
+
+/* ---------- open / close / load ---------- */
+function openRegularSchedule() {
+    regular.open = true;
+    regular.armedUserId = null;
+    $("rs-search").value = "";
+    $("screen-regular").hidden = false;
+    renderRegular();
+    loadRegular();
+    setTimeout(() => $("rs-back").focus(), 0);
+}
+
+function closeRegularSchedule(opts) {
+    if (!regular.open) return;
+    dragCancel();
+    regular.open = false;
+    regular.armedUserId = null;
+    regular.seq++;
+    $("screen-regular").hidden = true;
+    if (regular.dirty && (!opts || opts.reload !== false)) {
+        state.scheduleCache.clear();          // the message screen reads the new regular list
+        if (state.started) loadSchedule(true);
+    }
+    regular.dirty = false;
+}
+
+async function loadRegular() {
+    const seq = ++regular.seq;
+    regular.status = "loading";
+    regular.error = "";
+    renderRegular();
+    try {
+        const [rows] = await Promise.all([mappingService.getAll(), loadUsers()]);
+        if (seq !== regular.seq) return;
+        regular.rows = rows.map(normalizeMappingRow).filter(Boolean);
+        regular.status = "ready";
+    } catch (e) {
+        if (seq !== regular.seq) return;
+        const f = friendlyError(e, "Could not load the regular schedule. Please try again.");
+        regular.status = "error";
+        regular.error = f.message;
+        if (f.authExpired) handleAuthExpired();
+    }
+    renderRegular();
+}
+
+/* ---------- rendering ---------- */
+function renderRegular() {
+    renderRegularStats();
+    renderRegularArmed();
+    renderRegularGrid();
+    renderRegularUsers();
+}
+
+function renderRegularStats() {
+    const box = $("rs-stats");
+    if (regular.status !== "ready") { box.replaceChildren(); return; }
+    const filled = new Set(regular.rows.map((r) => r.date + "|" + r.shift));
+    const blank = TABLE_DAYS * SHIFT_KEYS.length - filled.size;
+    box.replaceChildren(
+        el("span", { class: "rs-stat", text: regular.rows.length + " assigned" }),
+        el("span", { class: "rs-stat" + (blank ? " warn" : ""), text: blank ? "⚠ " + blank + " blank" : "✓ All filled" })
+    );
+}
+
+function renderRegularArmed() {
+    const bar = $("rs-armed");
+    const user = regular.armedUserId ? regularUser(regular.armedUserId) : null;
+    if (!user) regular.armedUserId = null;
+    $("screen-regular").classList.toggle("is-armed", !!user);
+    bar.hidden = !user;
+    if (!user) { bar.replaceChildren(); return; }
+    const count = regular.rows.filter((r) => sameId(r.user_id, user.id)).length;
+    bar.replaceChildren(
+        el("span", {}, ["Tap boxes to add ", el("strong", { text: user.name }),
+            " · in " + count + (count === 1 ? " box" : " boxes")]),
+        el("button", { type: "button", class: "btn btn-secondary btn-sm", text: "Done", onclick: () => setArmedUser(null) })
+    );
+}
+
+function renderRegularGrid() {
+    const wrap = $("rs-table-wrap");
+    if (regular.status === "error") {
+        wrap.replaceChildren(el("div", { class: "state-card error", role: "alert" }, [
+            el("h3", { text: "⚠ Could not load the regular schedule" }),
+            el("p", { text: regular.error }),
+            el("button", { type: "button", class: "btn btn-primary", text: "↻ Try Again", onclick: loadRegular })
+        ]));
+        return;
+    }
+    if (regular.status !== "ready") {
+        wrap.replaceChildren(el("div", { class: "rs-loading" }, [
+            el("p", { class: "loading-text", role: "status", text: "Loading regular schedule..." }),
+            el("div", { class: "skeleton", "aria-hidden": "true" })
+        ]));
+        return;
+    }
+
+    const byCell = new Map();
+    regular.rows.forEach((r) => {
+        const key = r.date + "|" + r.shift;
+        if (!byCell.has(key)) byCell.set(key, []);
+        byCell.get(key).push(r);
+    });
+    const todayDay = getDatabaseDay(state.today);
+    const days = Array.from({ length: TABLE_DAYS }, (_, i) => i + 1);
+
+    const head = el("tr", {}, [el("th", { class: "rs-day", scope: "col", text: "Day" })].concat(SHIFT_KEYS.map((k) =>
+        el("th", { scope: "col" }, [
+            el("span", { class: "rs-th-num", text: "Shift " + SHIFT_CONFIG[k].number }),
+            el("span", { class: "rs-th-time", text: SHIFT_CONFIG[k].start + " – " + SHIFT_CONFIG[k].end })
+        ]))));
+
+    const body = days.map((day) => el("tr", { class: day === todayDay ? "is-today" : null }, [
+        el("th", { class: "rs-day", scope: "row", title: day > 28 ? "Used only in months that have day " + day : null }, [
+            String(day),
+            day === todayDay ? el("span", { class: "rs-today-tag", text: "Today" }) : null
+        ])
+    ].concat(SHIFT_KEYS.map((k) => renderRegularCell(day, k, byCell.get(day + "|" + k) || [])))));
+
+    wrap.replaceChildren(el("table", { class: "rs-table" }, [
+        el("colgroup", {}, [el("col", { class: "rs-col-day" })].concat(SHIFT_KEYS.map(() => el("col")))),
+        el("thead", {}, head),
+        el("tbody", {}, body)
+    ]));
+}
+
+function renderRegularCell(day, shiftKey, rows) {
+    const label = regularLabel(day, shiftKey);
+    const chips = rows.map((r) => {
+        const user = regularUser(r.user_id);
+        const name = regularUserName(r.user_id);
+        return el("button", {
+            type: "button",
+            class: "rs-chip" + (r.pending ? " is-pending" : "") + (regular.armedUserId && sameId(r.user_id, regular.armedUserId) ? " is-hl" : ""),
+            title: user ? [user.name, user.enName, displayPhone(user.phone)].filter(Boolean).join(" · ") + "\nTap to change · drag to move, swap or remove" : name,
+            "aria-label": "Change " + name + " in " + label,
+            dataset: r.pending ? { mapId: String(r.id) } : { drag: "chip", mapId: String(r.id), userId: String(r.user_id) }
+        }, [
+            el("span", { class: "rs-chip-name", text: name }),
+            user ? el("span", { class: "rs-chip-phone", text: displayPhone(user.phone) }) : null
+        ]);
+    });
+    chips.push(el("button", { type: "button", class: "rs-add", "aria-label": "Add person to " + label, text: rows.length ? "＋" : "＋ Add" }));
+    return el("td", { class: "rs-cell" + (rows.length ? "" : " is-empty"), dataset: { drop: "cell", day: String(day), shift: shiftKey } },
+        [el("div", { class: "rs-cell-inner" }, chips)]);
+}
+
+function renderRegularUsers() {
+    const list = $("rs-users");
+    const countBox = $("rs-user-count");
+    if (state.usersStatus !== "ready") {
+        countBox.textContent = "";
+        list.replaceChildren(el("li", { class: "pick-status", text: state.usersStatus === "error" ? "Could not load users." : "Loading users..." }));
+        return;
+    }
+    const counts = new Map();
+    regular.rows.forEach((r) => counts.set(String(r.user_id), (counts.get(String(r.user_id)) || 0) + 1));
+    const q = $("rs-search").value;
+    const found = state.users.filter((u) => userMatchesQuery(u, q));
+    countBox.textContent = found.length === state.users.length ? state.users.length + " people" : found.length + " of " + state.users.length;
+    if (!found.length) {
+        list.replaceChildren(el("li", { class: "pick-status",
+            text: state.users.length ? "No match for “" + q.trim() + "”." : "No users yet. Add people from 👥." }));
+        return;
+    }
+    const showCounts = regular.status === "ready";
+    list.replaceChildren(...found.map((u) => {
+        const key = String(u.id);
+        const n = counts.get(key) || 0;
+        return el("li", {}, el("button", {
+            type: "button", class: "rs-user", "aria-pressed": String(regular.armedUserId === key),
+            dataset: { drag: "user", userId: key },
+            title: "Drag onto a box, or tap and then tap boxes",
+            "aria-label": u.name + ", " + displayPhone(u.phone) + (showCounts ? ", in " + n + " boxes" : "") + ". Tap to assign to boxes"
+        }, [
+            el("span", { class: "rs-grip", "aria-hidden": "true", text: "⠿" }),
+            el("span", { class: "rs-user-text" }, [
+                el("span", { class: "pick-name", text: u.name }),
+                el("span", { class: "pick-sub", text: [u.enName, displayPhone(u.phone)].filter(Boolean).join(" · ") })
+            ]),
+            showCounts ? el("span", { class: "rs-count" + (n ? "" : " is-zero"), "aria-hidden": "true",
+                title: n ? "In " + n + (n === 1 ? " box" : " boxes") : "Not in any box yet", text: String(n) }) : null
+        ]));
+    }));
+}
+
+function setArmedUser(key) {
+    regular.armedUserId = key && regular.armedUserId !== key ? key : null;
+    renderRegular();
+}
+
+/* ---------- changes (optimistic, rolled back on error) ---------- */
+async function regularAssign(day, shiftKey, user, opts) {
+    const label = regularLabel(day, shiftKey);
+    if (regularHasUser(day, shiftKey, user.id)) {
+        toast(normalizeName(user.name) + " is already in " + label + ".", { type: "error" });
+        return false;
+    }
+    const row = { id: newTempId(), date: day, shift: shiftKey, user_id: user.id, pending: true };
+    regular.rows.push(row);
+    renderRegular();
+    try {
+        const saved = normalizeMappingRow(await mappingService.assign(day, shiftKey, user.id));
+        if (saved) Object.assign(row, saved);
+        regular.dirty = true;
+        if (!(opts && opts.quiet)) toast(normalizeName(user.name) + " → " + label + " ✓");
+        return true;
+    } catch (e) {
+        regular.rows = regular.rows.filter((r) => r !== row);
+        regularFail(e, "Could not assign. Please try again.");
+        return false;
+    } finally {
+        row.pending = false;
+        renderRegular();
+    }
+}
+
+async function regularRemove(row, opts) {
+    const index = regular.rows.indexOf(row);
+    if (index < 0 || row.pending) return false;
+    const user = regularUser(row.user_id);
+    regular.rows.splice(index, 1);
+    renderRegular();
+    try {
+        await mappingService.remove(row.id);
+        regular.dirty = true;
+        if (!(opts && opts.quiet)) {
+            toast(regularUserName(row.user_id) + " removed from " + regularLabel(row.date, row.shift) + " ✓", user ? {
+                actionLabel: "Undo", onAction: () => regularAssign(row.date, row.shift, user)
+            } : undefined);
+        }
+        return true;
+    } catch (e) {
+        regular.rows.splice(Math.min(index, regular.rows.length), 0, row);
+        regularFail(e, "Could not remove. Please try again.");
+        return false;
+    } finally {
+        renderRegular();
+    }
+}
+
+async function regularMove(row, day, shiftKey) {
+    if (!regular.rows.includes(row) || row.pending) return false;
+    if (row.date === day && row.shift === shiftKey) return false;
+    const label = regularLabel(day, shiftKey);
+    if (regularHasUser(day, shiftKey, row.user_id)) {
+        toast(regularUserName(row.user_id) + " is already in " + label + ".", { type: "error" });
+        return false;
+    }
+    const from = { date: row.date, shift: row.shift };
+    Object.assign(row, { date: day, shift: shiftKey, pending: true });
+    renderRegular();
+    try {
+        await mappingService.move(row.id, day, shiftKey);
+        regular.dirty = true;
+        toast(regularUserName(row.user_id) + " moved to " + label + " ✓", {
+            actionLabel: "Undo", onAction: () => regularMove(row, from.date, from.shift)
+        });
+        return true;
+    } catch (e) {
+        Object.assign(row, from);
+        regularFail(e, "Could not move. Please try again.");
+        return false;
+    } finally {
+        row.pending = false;
+        renderRegular();
+    }
+}
+
+/** Interchange two people between their boxes (two row updates; the first is undone if the second fails). */
+async function regularSwap(a, b) {
+    if (!regular.rows.includes(a) || !regular.rows.includes(b) || a.pending || b.pending) return false;
+    const aFrom = { date: a.date, shift: a.shift };
+    const bFrom = { date: b.date, shift: b.shift };
+    Object.assign(a, bFrom, { pending: true });
+    Object.assign(b, aFrom, { pending: true });
+    renderRegular();
+    let movedA = false;
+    try {
+        await mappingService.move(a.id, bFrom.date, bFrom.shift);
+        movedA = true;
+        await mappingService.move(b.id, aFrom.date, aFrom.shift);
+        regular.dirty = true;
+        toast("Swapped " + regularUserName(a.user_id) + " ⇄ " + regularUserName(b.user_id) + " ✓", {
+            actionLabel: "Undo", onAction: () => regularSwap(a, b)
+        });
+        return true;
+    } catch (e) {
+        let reload = false;
+        if (movedA) {
+            try { await mappingService.move(a.id, aFrom.date, aFrom.shift); }
+            catch (e2) { console.error("Swap rollback failed:", e2); reload = true; }
+        }
+        Object.assign(a, aFrom);
+        Object.assign(b, bFrom);
+        regularFail(e, "Could not swap. Please try again.");
+        if (reload) loadRegular();                 // show what is really saved
+        return false;
+    } finally {
+        a.pending = false;
+        b.pending = false;
+        renderRegular();
+    }
+}
+
+/** Swap the person in one box: add the new one first, so nothing is lost if it fails. */
+async function regularReplace(row, newUser) {
+    if (!regular.rows.includes(row) || row.pending) return;
+    if (!(await regularAssign(row.date, row.shift, newUser, { quiet: true }))) return;
+    if (await regularRemove(row, { quiet: true })) toast("Changed to " + normalizeName(newUser.name) + " ✓");
+}
+
+/* ---------- modals ---------- */
+/** Tap on a box: who is in it (✕ to remove) + picker to add more. */
+function openRegularCell(day, shiftKey) {
+    const c = SHIFT_CONFIG[shiftKey];
+    const label = regularLabel(day, shiftKey);
+    const current = el("div");
+    let picker = null;
+    const refresh = () => {
+        renderCurrent();
+        if (picker) picker.search.dispatchEvent(new Event("input"));   // re-evaluate "Already in this box"
+    };
+
+    function renderCurrent() {
+        const rows = regularCell(day, shiftKey);
+        current.replaceChildren(rows.length
+            ? el("ul", { class: "person-list" }, rows.map((r) => {
+                const user = regularUser(r.user_id);
+                const name = regularUserName(r.user_id);
+                return el("li", { class: "person" }, [
+                    el("span", {}, [el("strong", { text: name }), " ", el("span", { class: "line-phone", text: user ? displayPhone(user.phone) : "" })]),
+                    el("button", { type: "button", class: "person-remove", title: "Remove", disabled: !!r.pending,
+                        "aria-label": "Remove " + name + " from " + label, text: "✕",
+                        onclick: () => { regularRemove(r).then(refresh); refresh(); } })
+                ]);
+            }))
+            : el("p", { class: "banner compact", text: "No one in this box yet." }));
+    }
+
+    picker = createUserPicker({
+        allowTemp: false,
+        blockedReason: (u) => regularHasUser(day, shiftKey, u.id) ? "Already in this box" : null,
+        onPick: (user) => {
+            if (regularHasUser(day, shiftKey, user.id)) return DUPLICATE_MESSAGE;
+            regularAssign(day, shiftKey, user).then(refresh);
+            picker.search.value = "";
+            refresh();
+            picker.search.focus();
+        }
+    });
+    renderCurrent();
+
+    modal.open({
+        title: label,
+        body: [
+            el("p", { class: "modal-text", text: c.start + " to " + c.end + " · every month on day " + day }),
+            el("p", { class: "field-label", text: "In this box" }),
+            current,
+            el("p", { class: "field-label rs-modal-gap", text: "Add a person" }),
+            picker.node
+        ],
+        initialFocus: picker.search,
+        actions: [{ label: "Done" }]
+    });
+}
+
+/** Tap on a person inside a box: pick who comes instead, or remove. */
+function openRegularChange(row) {
+    const user = regularUser(row.user_id);
+    const label = regularLabel(row.date, row.shift);
+    const picker = createUserPicker({
+        allowTemp: false,
+        blockedReason: (u) => sameId(u.id, row.user_id) ? "Current"
+            : regularHasUser(row.date, row.shift, u.id) ? "Already in this box" : null,
+        onPick: (newUser) => {
+            if (regularHasUser(row.date, row.shift, newUser.id)) return DUPLICATE_MESSAGE;
+            modal.close();
+            regularReplace(row, newUser);
+        }
+    });
+    modal.open({
+        title: "Change person · " + label,
+        body: [
+            el("div", { class: "current-box" }, [
+                el("span", { text: "Now: " }), el("strong", { text: regularUserName(row.user_id) }), " ",
+                el("span", { text: user ? displayPhone(user.phone) : "" })
+            ]),
+            el("p", { class: "modal-text", text: "Tap the person who will come instead:" }),
+            picker.node
+        ],
+        initialFocus: picker.search,
+        actions: [
+            { label: "🗑 Remove", kind: "btn-danger-quiet", onClick: () => { modal.close(); regularRemove(row); } },
+            { label: "Cancel" }
+        ]
+    });
+}
+
+/* ---------- drag & drop (mouse: drag; touch: long-press then drag) ---------- */
+const drag = { pending: null, active: null, suppressClick: false, raf: 0 };
+
+function dragPayload(node) {
+    return { node, kind: node.dataset.drag, userId: node.dataset.userId, mapId: node.dataset.mapId || null };
+}
+
+function dragStart(payload, x, y) {
+    const user = regularUser(payload.userId);
+    const row = payload.mapId ? regularRowById(payload.mapId) : null;
+    if (!user || (payload.mapId && (!row || row.pending)) || regular.status !== "ready") return;
+    const ghost = el("div", { class: "rs-ghost", text: (row ? "↔ " : "＋ ") + user.name });
+    document.body.appendChild(ghost);
+    drag.active = { ...payload, user, row, ghost, x, y, over: null };
+    drag.suppressClick = true;
+    payload.node.classList.add("is-drag-src");
+    $("screen-regular").classList.add("is-dragging");
+    $("rs-trash").hidden = !row;                 // 🗑 only when dragging someone out of a box
+    try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { /* not supported */ }
+    dragMove(x, y);
+    drag.raf = requestAnimationFrame(dragAutoScroll);
+}
+
+/**
+ * What a drop on `target` would do:
+ *   remove (🗑) · assign (from People list) · move (box → empty box)
+ *   swap (box → box with a person: with the person under the pointer, else the first one) · none
+ */
+function dropPlan(a, target, chipNode) {
+    if (target.dataset.drop === "trash") return { type: "remove", ok: !!a.row };
+    const day = Number(target.dataset.day);
+    const shiftKey = target.dataset.shift;
+    if (!a.row) return { type: "assign", ok: !regularHasUser(day, shiftKey, a.user.id) };
+    if (a.row.date === day && a.row.shift === shiftKey) return { type: "none", ok: true };   // dropped back
+
+    const there = regularCell(day, shiftKey);
+    if (!there.length) return { type: "move", ok: true };
+    const pointed = chipNode ? regularRowById(chipNode.dataset.mapId) : null;
+    const other = pointed && there.includes(pointed) ? pointed : there[0];
+    const ok = !other.pending &&
+        !sameId(other.user_id, a.row.user_id) &&
+        !there.some((r) => r !== other && sameId(r.user_id, a.row.user_id)) &&                  // A not already in target
+        !regularCell(a.row.date, a.row.shift).some((r) => r !== a.row && sameId(r.user_id, other.user_id));   // B not already in source
+    return { type: "swap", ok, other };
+}
+
+function dragMove(x, y) {
+    const a = drag.active;
+    a.x = x; a.y = y;
+    a.ghost.style.transform = "translate(" + (x + 14) + "px, " + (y + 12) + "px)";
+    const hit = document.elementFromPoint(x, y);
+    let target = hit ? hit.closest("#screen-regular [data-drop]") : null;
+    if (target && target.hidden) target = null;
+    let chipNode = target && hit ? hit.closest(".rs-chip") : null;
+    if (chipNode === a.node) chipNode = null;
+    if (target === a.over && chipNode === a.overChip) return;
+
+    if (a.over) a.over.classList.remove("is-over", "is-invalid");
+    if (a.swapNode) a.swapNode.classList.remove("is-swap");
+    a.over = target;
+    a.overChip = chipNode;
+    a.plan = target ? dropPlan(a, target, chipNode) : null;
+    a.swapNode = null;
+    if (target) {
+        target.classList.add("is-over");
+        if (!a.plan.ok) target.classList.add("is-invalid");
+        if (a.plan.type === "swap" && a.plan.ok) {
+            a.swapNode = target.querySelector('.rs-chip[data-map-id="' + String(a.plan.other.id) + '"]');
+            if (a.swapNode) a.swapNode.classList.add("is-swap");
+        }
+    }
+    const name = normalizeName(a.user.name);
+    a.ghost.textContent = !a.plan ? (a.row ? "↔ " : "＋ ") + name
+        : a.plan.type === "swap" ? "⇄ " + name + " ⇄ " + regularUserName(a.plan.other.user_id)
+        : a.plan.type === "remove" ? "🗑 Remove " + name
+        : (a.row ? "↔ " : "＋ ") + name;
+}
+
+/** Scroll the table while the pointer is held near its edges. */
+function dragAutoScroll() {
+    const a = drag.active;
+    if (!a) return;
+    const wrap = $("rs-table-wrap");
+    const r = wrap.getBoundingClientRect();
+    const EDGE = 48, SPEED = 14;
+    let dx = 0, dy = 0;
+    if (a.x >= r.left && a.x <= r.right) {
+        if (a.y < r.top + EDGE && a.y > r.top - 40) dy = -SPEED;
+        else if (a.y > r.bottom - EDGE && a.y < r.bottom + 40) dy = SPEED;
+    }
+    if (a.y >= r.top && a.y <= r.bottom) {
+        if (a.x < r.left + EDGE + 64 && a.x > r.left - 40) dx = -SPEED;     // + sticky day column
+        else if (a.x > r.right - EDGE && a.x < r.right + 40) dx = SPEED;
+    }
+    if (dx || dy) { wrap.scrollBy(dx, dy); dragMove(a.x, a.y); }
+    drag.raf = requestAnimationFrame(dragAutoScroll);
+}
+
+function dragEnd(commit) {
+    const a = drag.active;
+    if (!a) return;
+    cancelAnimationFrame(drag.raf);
+    drag.active = null;
+    a.ghost.remove();
+    a.node.classList.remove("is-drag-src");
+    if (a.over) a.over.classList.remove("is-over", "is-invalid");
+    if (a.swapNode) a.swapNode.classList.remove("is-swap");
+    $("screen-regular").classList.remove("is-dragging");
+    $("rs-trash").hidden = true;
+    setTimeout(() => { drag.suppressClick = false; }, 400);    // swallow the click that follows a drop
+
+    const target = a.over;
+    if (!commit || !target) return;
+    const plan = dropPlan(a, target, a.overChip);              // re-check: data may have changed mid-drag
+    const day = Number(target.dataset.day);
+    const shiftKey = target.dataset.shift;
+    if (plan.type === "remove") { if (a.row) regularRemove(a.row); }
+    else if (plan.type === "swap") {
+        if (plan.ok) regularSwap(a.row, plan.other);
+        else toast("Cannot swap: the same person would be twice in one box.", { type: "error" });
+    }
+    else if (plan.type === "move") regularMove(a.row, day, shiftKey);
+    else if (plan.type === "assign") regularAssign(day, shiftKey, a.user);
+}
+
+function dragCancel() {
+    if (drag.pending) { clearTimeout(drag.pending.timer); drag.pending = null; }
+    dragEnd(false);
+}
+
+function bindRegularEvents() {
+    const root = $("screen-regular");
+
+    $("rs-back").addEventListener("click", () => closeRegularSchedule());
+    $("rs-search").addEventListener("input", renderRegularUsers);
+
+    // A drop is followed by a click on whatever is under the pointer — ignore it
+    root.addEventListener("click", (e) => {
+        if (drag.suppressClick) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    root.addEventListener("click", (e) => {
+        const userBtn = e.target.closest(".rs-user");
+        if (userBtn) { setArmedUser(userBtn.dataset.userId); return; }
+        const cell = e.target.closest(".rs-cell");
+        if (!cell || regular.status !== "ready") return;
+        const day = Number(cell.dataset.day);
+        const shiftKey = cell.dataset.shift;
+        if (regular.armedUserId) {
+            const user = regularUser(regular.armedUserId);
+            if (user) regularAssign(day, shiftKey, user);
+            return;
+        }
+        const chip = e.target.closest(".rs-chip");
+        if (chip) {
+            const row = regularRowById(chip.dataset.mapId);
+            if (row && !row.pending) openRegularChange(row);
+            return;
+        }
+        openRegularCell(day, shiftKey);
+    });
+
+    // Mouse / pen: start dragging after a small move
+    root.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "touch" || e.button !== 0 || drag.active) return;
+        const node = e.target.closest("[data-drag]");
+        if (node) drag.pending = { payload: dragPayload(node), x: e.clientX, y: e.clientY };
+    });
+    document.addEventListener("pointermove", (e) => {
+        if (e.pointerType === "touch") return;
+        if (drag.active) { dragMove(e.clientX, e.clientY); return; }
+        const p = drag.pending;
+        if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 6) {
+            drag.pending = null;
+            dragStart(p.payload, e.clientX, e.clientY);
+        }
+    });
+    document.addEventListener("pointerup", (e) => {
+        if (e.pointerType === "touch") return;
+        drag.pending = null;
+        if (drag.active) dragEnd(true);
+    });
+    root.addEventListener("dragstart", (e) => e.preventDefault());   // no native HTML drag image
+
+    // Touch: long-press to pick up, so normal swipes still scroll
+    root.addEventListener("touchstart", (e) => {
+        if (e.touches.length !== 1 || drag.active) return;
+        const node = e.target.closest("[data-drag]");
+        if (!node) return;
+        const t = e.touches[0];
+        const p = { payload: dragPayload(node), x: t.clientX, y: t.clientY };
+        p.timer = setTimeout(() => {
+            if (drag.pending !== p) return;
+            drag.pending = null;
+            dragStart(p.payload, p.x, p.y);
+        }, 300);
+        drag.pending = p;
+    }, { passive: true });
+    document.addEventListener("touchmove", (e) => {
+        const t = e.touches[0];
+        if (drag.active) { e.preventDefault(); dragMove(t.clientX, t.clientY); return; }
+        const p = drag.pending;
+        if (p && p.timer && Math.hypot(t.clientX - p.x, t.clientY - p.y) > 10) { clearTimeout(p.timer); drag.pending = null; }
+    }, { passive: false });
+    document.addEventListener("touchend", () => {
+        if (drag.pending) { clearTimeout(drag.pending.timer); drag.pending = null; }
+        if (drag.active) dragEnd(true);
+    });
+    document.addEventListener("touchcancel", dragCancel);
+    root.addEventListener("contextmenu", (e) => { if (drag.active || drag.pending) e.preventDefault(); });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape" || !regular.open || modal.isOpen()) return;
+        if (drag.active) dragCancel();
+        else if (regular.armedUserId) setArmedUser(null);
+        else closeRegularSchedule();
+    });
+}
+
+
+/* =====================================================================
+ * 16. EVENTS
+ * ===================================================================== */
+async function handleCopy() {
+    const text = getActiveMessage();
+    if (!text) { toast(state.tab === "change" ? "No shift change to copy." : "Nothing to copy yet.", { type: "error" }); return; }
+    if (await copyText(text)) toast("Message copied ✓");
+    else openManualCopy(text);
+}
+
+function setDate(iso) {
+    if (!isValidISODate(iso)) {
+        toast("Please select a valid date.", { type: "error" });
+        $("date-input").value = state.date;
+        return;
+    }
+    if (iso === state.date) return;
+    state.date = iso;
+    state.tabDates[state.tab] = iso;
+    loadSchedule();
+}
+
+function setTab(tab, focus) {
+    if (tab !== state.tab) {
+        state.tab = tab;
+        const date = state.tabDates[tab];
+        if (date !== state.date) {
+            state.date = date;
+            loadSchedule();
+        } else {
+            renderAll();
+        }
+    }
+    if (focus) $("tab-" + tab).focus();
+}
+
+function bindEvents() {
+    document.body.addEventListener("click", (e) => {
+        const target = e.target.closest("[data-action]");
+        if (!target || target.closest("dialog")) return;
+        const action = target.dataset.action;
+        const shift = target.dataset.shift;
+        const index = Number(target.dataset.index);
+
+        switch (action) {
+            case "copy": handleCopy(); break;
+            case "add-user": openAddUser(shift); break;
+            case "edit-user": openEditUser(shift, index); break;
+            case "regular-schedule": openRegularSchedule(); break;
+            case "restore-shift": restoreShift(shift); break;
+            case "change-add": openChangeAdd(shift); break;
+            case "change-remove": removeChangeUser(shift, target.dataset.key); break;
+            case "change-edit": openChangeEdit(shift, target.dataset.key); break;
+            case "reset-day": openResetDay(); break;
+            case "prev-day": setDate(addDays(state.date, -1)); break;
+            case "next-day": setDate(addDays(state.date, 1)); break;
+            case "retry": loadSchedule(true); break;
+            case "manage-users": openManageUsers(""); break;
+            case "logout": authService.logout(); break;
+            case "bad-phone": toast("This mobile number is not valid. Please change it.", { type: "error" }); break;
+        }
+    });
+
+    const dateInput = $("date-input");
+    dateInput.addEventListener("change", (e) => { if (e.target.value) setDate(e.target.value); });
+    // Open the calendar when the date text is tapped (showPicker is supported by modern browsers)
+    dateInput.addEventListener("click", () => {
+        try { if (typeof dateInput.showPicker === "function") dateInput.showPicker(); } catch (err) { /* browser opens it itself */ }
+    });
+
+    document.querySelectorAll(".tab").forEach((btn) => {
+        btn.addEventListener("click", () => setTab(btn.dataset.tab));
+        btn.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                setTab(state.tab === "full" ? "change" : "full", true);
+            }
+        });
+    });
+
+    const dialog = $("modal");
+    dialog.addEventListener("close", () => {
+        dialog.replaceChildren();
+        const back = modal.returnFocus;
+        modal.returnFocus = null;
+        if (back && document.contains(back)) back.focus();
+    });
+    dialog.addEventListener("click", (e) => { if (e.target === dialog) modal.close(); });   // tap on backdrop
+
+    bindRegularEvents();
+
+    $("login-form").addEventListener("submit", handleLogin);
+    $("notice-reload").addEventListener("click", () => window.location.reload());
+
+    // Changes made in another tab of this browser
+    window.addEventListener("storage", (e) => {
+        if (e.key !== STORAGE_KEY && e.key !== SHIFT_CHANGE_STORAGE_KEY && e.key !== null) return;
+        overrideStore.loadOverrides();
+        changeStore.load();
+        state.override = overrideStore.getDateOverride(state.date);
+        renderAll();
+    });
+
+    // Keep "today" correct if the page stays open past midnight
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && state.started) {
+            state.today = getTodayIST();
+            renderAll();
+        }
+    });
+}
+
+
+/* =====================================================================
+ * 17. AUTH + SCREENS
+ * ===================================================================== */
+function showScreen(name) {
+    ["boot", "notice", "login", "main"].forEach((s) => { $("screen-" + s).hidden = s !== name; });
+}
+
+function showNotice(title, paragraphs) {
+    $("notice-title").textContent = title;
+    $("notice-body").replaceChildren(...paragraphs.map((p) => el("p", { class: "notice-text" }, p)));
+    showScreen("notice");
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = $("login-email").value.trim();
+    const password = $("login-password").value;
+    const errorBox = $("login-error");
+    const submit = $("login-submit");
+    errorBox.textContent = "";
+
+    if (!email) { errorBox.textContent = "Please enter your email."; $("login-email").focus(); return; }
+    if (!password) { errorBox.textContent = "Please enter your password."; $("login-password").focus(); return; }
+
+    submit.disabled = true;
+    submit.textContent = "Logging in...";
+    try {
+        await authService.login(email, password);
+        $("login-password").value = "";
+        // onAuthStateChange opens the app
+    } catch (err) {
+        const msg = String((err && err.message) || "");
+        if (/invalid login credentials/i.test(msg)) errorBox.textContent = "Email or password is incorrect.";
+        else if (/email not confirmed/i.test(msg)) errorBox.textContent = "This email is not confirmed yet. Please contact the admin.";
+        else errorBox.textContent = friendlyError(err, "Could not login. Please try again.").message;
+    } finally {
+        submit.disabled = false;
+        submit.textContent = "Login";
+    }
+}
+
+let authExpiredHandled = false;
+function handleAuthExpired() {
+    if (authExpiredHandled) return;
+    authExpiredHandled = true;
+    supabaseClient.auth.signOut({ scope: "local" }).finally(() => { authExpiredHandled = false; });
+}
+
+function startApp() {
+    state.started = true;
+    state.today = getTodayIST();
+    state.tabDates = {
+        full: addDays(state.today, DEFAULT_DAY_OFFSET.full),
+        change: addDays(state.today, DEFAULT_DAY_OFFSET.change)
+    };
+    state.tab = "full";
+    state.date = state.tabDates.full;
+    state.override = overrideStore.getDateOverride(state.date);
+    showScreen("main");
+    if (overrideStore.getLastError()) {
+        toast("This browser cannot save temporary changes. They will be lost after refresh.", { type: "error", duration: 6000 });
+    }
+    renderAll();
+    loadUsers().catch(() => {});
+    loadSchedule();
+}
+
+function stopApp() {
+    state.started = false;
+    state.loadSeq++;
+    state.defaultSchedule = null;
+    state.scheduleCache.clear();
+    state.users = [];
+    state.usersById = new Map();
+    state.usersStatus = "idle";
+    state.usersPromise = null;
+    closeRegularSchedule({ reload: false });
+    regular.rows = [];
+    regular.status = "idle";
+    modal.close();
+}
+
+function handleSession(session) {
+    if (session) {
+        if (!state.started) startApp();
+    } else {
+        if (state.started) stopApp();
+        showScreen("login");
+        setTimeout(() => $("login-email").focus(), 0);
+    }
+}
+
+/**
+ * Opened from another app as "...?home=/"? Show a 🏠 button back to it.
+ * Only same-site paths are accepted ("/" or "/x", never "//other-site").
+ */
+function setupHomeLink() {
+    const home = new URLSearchParams(window.location.search).get("home");
+    if (home && /^\/(?![\/\\])/.test(home)) {
+        $("home-link").href = home;
+        $("home-link").hidden = false;
+    }
+}
+
+function boot() {
+    bindEvents();
+    setupHomeLink();
+
+    if (!isSupabaseConfigured()) {
+        showNotice("Setup needed", [
+            ["Open ", el("span", { class: "code", text: "index.html" }), " and replace ",
+                el("span", { class: "code", text: "YOUR_SUPABASE_URL" }), " and ",
+                el("span", { class: "code", text: "YOUR_SUPABASE_PUBLISHABLE_KEY" }), " with your Supabase project values."],
+            ["See README.md → “Configure Supabase”."]
+        ]);
+        return;
+    }
+    if (!initSupabaseClient()) {
+        showNotice("Could not open the app", [
+            ["The app could not load. Please check your internet connection and try again."]
+        ]);
+        return;
+    }
+
+    overrideStore.loadOverrides();
+    overrideStore.pruneOldOverrides(getTodayIST(), KEEP_OVERRIDE_DAYS);
+    changeStore.load();
+    changeStore.prune(getTodayIST(), KEEP_OVERRIDE_DAYS);
+
+    // INITIAL_SESSION fires immediately with the saved login (or null).
+    // Work is deferred with setTimeout as recommended by supabase-js.
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        setTimeout(() => handleSession(session), 0);
+    });
+}
+
+if (typeof document !== "undefined") {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+    else boot();
+}
+</script>
+</body>
+</html>
