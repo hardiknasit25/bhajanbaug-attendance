@@ -64,7 +64,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return null;
 };
 
-// "all-members" + one tab per poshak group_type (poshak | sakshi | aatmiy) + completed.
+// "all-members" + one tab per poshak group_type (poshak | sakshi | aatmiy | karyakar) + completed.
 type ReportTabs = "all-members" | PoshakGroupType | "completed-sabha";
 
 const isGroupTypeTab = (t: string): t is PoshakGroupType =>

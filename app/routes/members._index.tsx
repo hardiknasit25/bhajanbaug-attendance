@@ -29,7 +29,7 @@ export function meta({}: MetaArgs) {
   ];
 }
 
-// "all-members" plus one tab per poshak group_type (poshak | sakshi | aatmiy).
+// "all-members" plus one tab per poshak group_type (poshak | sakshi | aatmiy | karyakar).
 type MemberTabs = "all-members" | PoshakGroupType;
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -227,7 +227,8 @@ export default function Members() {
         onValueChange={(val) => setSearchParams({ tab: val })}
         className="w-full h-full flex flex-col justify-start"
       >
-        <TabsList className="w-full bg-primaryColor rounded-none justify-evenly h-10 pb-2">
+        {/* Scrollable on mobile: tabs keep their natural width and scroll instead of squishing. */}
+        <TabsList className="w-full flex justify-start sm:justify-evenly items-center bg-primaryColor rounded-none h-10 pb-2 overflow-x-auto scrollbar-none [&>button]:shrink-0">
           {canAllMembers && (
             <TabsTrigger value="all-members">All Members</TabsTrigger>
           )}

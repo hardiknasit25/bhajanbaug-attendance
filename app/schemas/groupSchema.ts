@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const groupSchema = z.object({
   group_name: z.string().min(2, "Name must be at least 2 characters").max(120),
-  group_type: z.enum(["poshak", "sakshi", "aatmiy"]),
+  group_type: z.enum(["poshak", "sakshi", "aatmiy", "karyakar"]),
   // Comes from the leader picker; undefined until one is chosen.
   poshak_leader_id: z
     .number()

@@ -18,14 +18,15 @@ import { useSabha } from "~/hooks/useSabha";
 import { useEffect } from "react";
 import SelectController from "../formController.tsx/SelectController";
 
-export type SabhaType = "yuva_sabha" | "group_sabha";
+// karyakar_sabha lists everyone mapped into a Karyakar group.
+export type SabhaType = "yuva_sabha" | "group_sabha" | "karyakar_sabha";
 
 // Zod Schema
 const sabhaFormSchema = z.object({
   sabhaName: z.string().min(1, "Sabha name is required"),
   sabhaType: z.string().refine(
     (value) => {
-      const validTypes = ["yuva_sabha", "group_sabha"];
+      const validTypes = ["yuva_sabha", "group_sabha", "karyakar_sabha"];
       return validTypes.includes(value);
     },
     {
@@ -121,6 +122,7 @@ export default function SabhaFormDialog() {
             options={[
               { label: "Yuva Sabha", value: "yuva_sabha" },
               { label: "Group Sabha", value: "group_sabha" },
+              { label: "Karyakar Sabha", value: "karyakar_sabha" },
             ]}
           />
 

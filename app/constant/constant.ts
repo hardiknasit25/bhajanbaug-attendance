@@ -13,6 +13,7 @@ export const POSHAK_GROUP_TYPES = [
   { key: "poshak", label: "Poshak" },
   { key: "sakshi", label: "Sakshi" },
   { key: "aatmiy", label: "Aatmiy" },
+  { key: "karyakar", label: "Karyakar" },
 ] as const;
 
 export type PoshakGroupType = (typeof POSHAK_GROUP_TYPES)[number]["key"];
