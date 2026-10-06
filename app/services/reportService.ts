@@ -27,7 +27,8 @@ export interface GroupShareImage {
   poshakLeaderName: string;
   mobile: string; // digits only, with country code
   imageUrl: string;
-  message: string; // ready-made WhatsApp text (contains imageUrl)
+  shareUrl: string; // page with Open Graph tags (gives the WhatsApp link preview)
+  message: string; // ready-made WhatsApp text (contains shareUrl)
 }
 
 export const reportService = {
