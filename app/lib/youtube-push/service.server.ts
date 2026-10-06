@@ -113,7 +113,9 @@ function renewIfNeeded() {
 }
 
 export function startBackgroundJobs() {
-  if (g.__ytPushTimer || !config.autoSubscribe) return;
+  // Serverless (Vercel): no long-lived process, so this would just re-subscribe on every cold
+  // start (and the fetch often fails there). Subscribe manually from the page instead.
+  if (g.__ytPushTimer || !config.autoSubscribe || process.env.VERCEL) return;
   getState().channel.youtubeChannelId = config.channelId;
   save();
   renewIfNeeded();

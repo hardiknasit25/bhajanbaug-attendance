@@ -5,7 +5,6 @@ import reportReducer from "./slice/reportSlice";
 import roleReducer from "./slice/roleSlice";
 import permissionReducer from "./slice/permissionSlice";
 import groupReducer from "./slice/groupSlice";
-import whatsappReducer from "./slice/whatsappSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +14,6 @@ export const store = configureStore({
     roles: roleReducer,
     permissions: permissionReducer,
     groups: groupReducer,
-    whatsapp: whatsappReducer,
   },
 });
 

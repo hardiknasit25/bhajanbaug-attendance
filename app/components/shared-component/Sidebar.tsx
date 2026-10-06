@@ -18,7 +18,6 @@ import type { UserProfile } from "~/types/auth.interface";
 import { deleteCookie } from "~/utils/cookie";
 import { promptInstall, useInstallAvailable } from "~/utils/installPrompt";
 import { SheetClose } from "../ui/sheet";
-import WhatsAppIcon from "./WhatsAppIcon";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -99,20 +98,6 @@ function Sidebar() {
             <span className="text-lg font-light uppercase">profile</span>
           </button>
         </SheetClose>
-
-        {/* WhatsApp account used to send reports */}
-        {can("whatsapp", "read") && (
-          <SheetClose asChild>
-            <button
-              type="button"
-              onClick={() => navigate("/whatsapp")}
-              className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-textColor transition-colors hover:bg-gray-100"
-            >
-              <WhatsAppIcon size={20} className="text-[#25D366]" />
-              <span className="text-lg font-light uppercase">WhatsApp</span>
-            </button>
-          </SheetClose>
-        )}
 
         {/* Management (role / permission) — gated by access */}
         {managementItems.length > 0 && (

@@ -20,6 +20,16 @@ const buildReportParams = (filter: filterType, sabhaIds?: number[]) => {
   return params;
 };
 
+// Returned by GET /report/whatsapp/share-image.
+export interface GroupShareImage {
+  groupId: number;
+  poshakLeaderId: number | null;
+  poshakLeaderName: string;
+  mobile: string; // digits only, with country code
+  imageUrl: string;
+  message: string; // ready-made WhatsApp text (contains imageUrl)
+}
+
 export const reportService = {
   //#region fetch member report
   getMemberReport: async (filter: filterType, sabhaIds?: number[]) => {
@@ -52,5 +62,26 @@ export const reportService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  //#region "Share member list image": backend renders + saves the image and
+  // returns the Poshak Leader's number and the WhatsApp message with its link.
+  getGroupShareImage: async (
+    groupId: number,
+    filter: filterType,
+    sabhaIds?: number[],
+    groupType?: string
+  ) => {
+    const params: Record<string, string> = {
+      ...buildReportParams(filter, sabhaIds),
+      group_id: String(groupId),
+    };
+    if (groupType) params.group_type = groupType;
+    const response = await axiosInstance.get(
+      API_ENDPOINTS.REPORT.WHATSAPP_SHARE_IMAGE,
+      // Rendering the image can take longer than the default 10s on a slow server.
+      { params, timeout: 60_000 }
+    );
+    return response.data as { data: GroupShareImage };
   },
 };

@@ -82,10 +82,11 @@ function GroupMemberCards({
   totalSabha?: number;
   showDownload?: boolean;
   onDownloadGroup?: (groupId: number | null, leaderName: string) => void;
-  // When provided, adds a "Share member list image" action that has the backend
-  // render the group's member list and send it to the Poshak Leader on WhatsApp.
+  // When provided, adds a "Share member list image" action: the backend renders
+  // the group's member list image, then the Poshak Leader's WhatsApp chat opens
+  // with the message and image link pre-filled.
   onShareGroupImage?: (group: PoshakGroupData, leaderName: string) => void;
-  // Groups whose report is being sent right now (action disabled meanwhile).
+  // Groups whose image is being prepared right now (action disabled meanwhile).
   sendingGroupIds?: ReadonlySet<number>;
 }) {
   // Open cards, keyed by group id — so open-state stays attached to the right
@@ -138,7 +139,7 @@ function GroupMemberCards({
             if (onShareGroupImage && groupId != null)
               actions.push({
                 key: "share-image",
-                label: isSending ? "Sending..." : "Share member list image",
+                label: isSending ? "Preparing..." : "Share member list image",
                 icon: isSending ? (
                   <Spinner className="size-[18px] text-[#25D366]" />
                 ) : (
@@ -214,7 +215,7 @@ function GroupMemberCards({
                       role="status"
                       className="flex items-center gap-1 rounded-full bg-[#25D366]/15 px-2 py-0.5 text-[11px] font-medium text-green-800"
                     >
-                      <Spinner className="size-3" /> Sending...
+                      <Spinner className="size-3" /> Preparing...
                     </span>
                   )}
                   {actions.length > 0 && (
