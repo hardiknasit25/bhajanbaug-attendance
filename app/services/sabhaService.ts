@@ -58,20 +58,6 @@ export const sabhaService = {
     }
   },
 
-  //#region mark a single member present (QR scan) — persists immediately
-  markMemberPresent: async (sabhaId: number, userId: number) => {
-    try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.SYNC}`, {
-        sabha_id: sabhaId,
-        present_user_id: [userId],
-        absent_user_id: [],
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-
   //#region start sabha by id
   startSabha: async (sabhaId: number) => {
     try {

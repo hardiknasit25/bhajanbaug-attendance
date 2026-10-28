@@ -27,6 +27,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Home() {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -36,7 +37,10 @@ export default function Home() {
         if (active) setWishes(res?.data ?? []);
       })
       .catch(() => {
-        if (active) setWishes([]);
+        if (active) {
+          setWishes([]);
+          setLoadFailed(true);
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -63,6 +67,10 @@ export default function Home() {
 
       {loading ? (
         <LoadingSpinner />
+      ) : loadFailed ? (
+        <div className="mt-6 text-center text-textLightColor">
+          Could not load birthdays. Please try again.
+        </div>
       ) : wishes.length === 0 ? (
         <div className="mt-6 text-center text-textLightColor">
           No upcoming birthdays

@@ -18,8 +18,6 @@ import {
 } from "~/constant/constant";
 import { useMembers } from "~/hooks/useMembers";
 import { useMyPermissions } from "~/hooks/usePermissions";
-import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
-import { memberQrCardBlob } from "~/utils/memberQrCard";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
@@ -77,13 +75,6 @@ export default function Members() {
           ? "poshak"
           : "all-members";
 
-  // Progress for the per-group "separate QR codes" download (one PDF per member).
-  const [qrProgress, setQrProgress] = useState<{
-    current: number;
-    total: number;
-    label: string;
-  } | null>(null);
-
   // --------------------------
   // FETCH MEMBERS BASED ON TAB
   // --------------------------
@@ -113,49 +104,6 @@ export default function Members() {
     setSearchText(value);
   };
 
-  // Download a SEPARATE QR card image (PNG) for each member of a poshak group
-  // (one file per member). groupId is null for the "Others" bucket.
-  const handleGroupQrDownload = async (
-    groupId: number | null,
-    leaderName: string,
-  ) => {
-    if (qrProgress) return; // a download run is already in progress
-    const group = filteredMembersByPoshakGroups.find(
-      (g) => (g.group_id ?? null) === groupId,
-    );
-    const users = group?.users ?? [];
-    if (users.length === 0) return;
-
-    setQrProgress({ current: 0, total: users.length, label: leaderName });
-    for (let i = 0; i < users.length; i++) {
-      const u = users[i];
-      const memberName = `${u.first_name ?? ""} ${u.middle_name ?? ""} ${
-        u.last_name ?? ""
-      }`
-        .replace(/\s+/g, " ")
-        .trim();
-      setQrProgress({
-        current: i + 1,
-        total: users.length,
-        label: memberName || `Member #${u.id}`,
-      });
-      try {
-        const blob = await memberQrCardBlob({
-          memberId: u.id,
-          name: memberName,
-          smk: u.smk_no,
-          mobile: u.mobile,
-        });
-        downloadBlob(blob, `qr_${safeFileName(memberName, `member_${u.id}`)}.png`);
-      } catch (error) {
-        console.error(`Failed to download QR for member ${u.id}`, error);
-      }
-      // Small gap so the browser doesn't block rapid successive downloads.
-      await new Promise((r) => setTimeout(r, 400));
-    }
-    setQrProgress(null);
-  };
-
   // Member count shown in the header: all-members count, or the sum across the
   // currently-loaded group_type's groups.
   const groupMembersCount = filteredMembersByPoshakGroups.reduce(
@@ -169,28 +117,6 @@ export default function Members() {
   // state already holds that tab's data (fetched on tab change).
   const groupTabContent = (
     <>
-      {/* Separate-QR download progress */}
-      {qrProgress && (
-        <div className="border-b border-borderColor bg-white px-4 py-2">
-          <div className="mb-1 flex items-center justify-between text-sm text-textColor">
-            <span className="truncate">
-              Downloading QR: {qrProgress.label || "…"}
-            </span>
-            <span className="ml-2 shrink-0">
-              {qrProgress.current}/{qrProgress.total}
-            </span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-            <div
-              className="h-full bg-primaryColor transition-all duration-300"
-              style={{
-                width: `${(qrProgress.current / qrProgress.total) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      )}
-
       {loading ? (
         <LoadingSpinner />
       ) : filteredMembersByPoshakGroups.length === 0 ? (
@@ -201,8 +127,6 @@ export default function Members() {
         <GroupMemberCards
           groupData={filteredMembersByPoshakGroups}
           from="members"
-          showDownload={true}
-          onDownloadGroup={handleGroupQrDownload}
         />
       )}
     </>
@@ -219,7 +143,6 @@ export default function Members() {
         searchPlaceholder: "Search Members...",
         searchValue: searchText,
         onSearchChange: handleSearchChange,
-        showSorting: activeTab === "all-members",
       }}
     >
       <Tabs

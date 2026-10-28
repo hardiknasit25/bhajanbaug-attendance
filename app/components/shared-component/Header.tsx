@@ -35,7 +35,6 @@ export interface HeaderProps {
   searchValue?: string;
   searchPlaceholder?: string;
   onSearchChange?: (value: string) => void;
-  showSorting?: boolean;
   onBackClick?: () => void;
 }
 
@@ -50,7 +49,6 @@ function Header({
   searchValue,
   searchPlaceholder,
   onSearchChange,
-  showSorting,
   onBackClick,
 }: HeaderProps) {
   const navigate = useNavigate();
@@ -166,12 +164,6 @@ function Header({
               />
             )}
           </div>
-          {showSorting && (
-            <div className="flex h-10 px-4 rounded-full justify-center items-center gap-2 border border-white">
-              <ListFilter size={16} />
-              <span className="uppercase text-sm select-none">sort</span>
-            </div>
-          )}
         </div>
       )}
     </div>

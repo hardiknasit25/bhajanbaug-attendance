@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { AUTH_TOKEN } from "~/constant/constant";
 import axiosInstance from "~/interceptor/interceptor";
 import sessionStorageService from "~/lib/sessionStorage";
@@ -13,8 +13,12 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: FormEvent) => {
+    // Used as the <form> submit handler, so Enter in either field signs in.
+    e?.preventDefault();
+    if (loading) return;
     setError("");
 
     if (!mobile || mobile.length !== 10) {
@@ -26,6 +30,7 @@ function Login() {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await axiosInstance.post("/auth/login", {
         mobile,
@@ -51,11 +56,13 @@ function Login() {
     } catch (error: unknown) {
       const message = error && typeof error === "object" && "message" in error ? (error as Error).message : "Login failed. Please try again.";
       setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="relative h-dvh w-full flex flex-col gap-4 justify-end items-center pb-24 px-4">
+    <form onSubmit={handleLogin} noValidate className="relative h-dvh w-full flex flex-col gap-4 justify-end items-center pb-24 px-4">
       {/* Background Image */}
       <img src="/images/background-maharaj.webp" alt="background" className="absolute inset-0 h-full w-full object-cover" />
 
@@ -91,12 +98,15 @@ function Login() {
 
       {/* Next Button */}
       <button
-        onClick={handleLogin}
-        className="relative w-full z-20 h-12 flex justify-center items-center gap-2 px-4 bg-white rounded-full font-semibold text-textLightColor mt-8"
+        type="submit"
+        disabled={loading}
+        aria-busy={loading}
+        className="relative w-full z-20 h-12 flex justify-center items-center gap-2 px-4 bg-white rounded-full font-semibold text-textLightColor mt-8 disabled:opacity-70"
       >
-        <span className="text-base uppercase tracking-wider">Next</span>
+        {loading && <Loader2 size={18} className="animate-spin" />}
+        <span className="text-base uppercase tracking-wider">{loading ? "Signing in..." : "Next"}</span>
       </button>
-    </div>
+    </form>
   );
 }
 

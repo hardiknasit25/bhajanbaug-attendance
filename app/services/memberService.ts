@@ -156,30 +156,6 @@ export const memberService = {
     return response.data as Blob;
   },
 
-  //#region download a single member's QR card (.pdf)
-  downloadQrCode: async (userId: number) => {
-    const response = await axiosInstance.get(
-      `${API_ENDPOINTS.MEMBERS.QR}/${userId}`,
-      { responseType: "blob" },
-    );
-    return response.data as Blob;
-  },
-
-  //#region download member QR codes (.pdf)
-  // groupId omitted/undefined -> all accessible members; a number -> that group;
-  // null -> the "no group" bucket (sent to the API as group_id=none).
-  downloadQrCodes: async (groupId?: number | null) => {
-    const params: Record<string, string> = {};
-    if (groupId !== undefined) {
-      params.group_id = groupId === null ? "none" : String(groupId);
-    }
-    const response = await axiosInstance.get(API_ENDPOINTS.MEMBERS.QR, {
-      params,
-      responseType: "blob",
-    });
-    return response.data as Blob;
-  },
-
   //#region import users from an .xlsx file
   importMembers: async (file: File) => {
     const formData = new FormData();

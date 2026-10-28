@@ -32,7 +32,6 @@ function LayoutWrapper({
             searchValue={headerConfigs.searchValue}
             searchPlaceholder={headerConfigs.searchPlaceholder}
             onSearchChange={headerConfigs.onSearchChange}
-            showSorting={headerConfigs.showSorting}
             onBackClick={headerConfigs.onBackClick}
           >
             {headerConfigs.children}

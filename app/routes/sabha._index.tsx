@@ -90,13 +90,16 @@ export default function Sabha() {
     <LayoutWrapper
       headerConfigs={{
         title: "Sabha",
-        children: (
+        // Creating a sabha needs the "sabha" create permission.
+        children: can("sabha", "create") ? (
           <CirclePlus
+            role="button"
+            aria-label="Create sabha"
             onClick={() => {
               openSabhaFormDialog(null);
             }}
           />
-        ),
+        ) : undefined,
       }}
     >
       <Tabs

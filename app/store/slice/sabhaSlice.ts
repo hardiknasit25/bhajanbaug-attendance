@@ -98,27 +98,6 @@ export const syncSabhaAttendance = createAsyncThunk(
   },
 );
 
-//#region mark a single member present (QR scan)
-export const markMemberPresent = createAsyncThunk(
-  "sabha/markMemberPresent",
-  async (
-    { sabhaId, userId }: { sabhaId: number; userId: number },
-    { rejectWithValue },
-  ) => {
-    try {
-      const response = await sabhaService.markMemberPresent(sabhaId, userId);
-      const data = response.data as {
-        total_present: number;
-        total_absent: number;
-        users: MemberData[];
-      };
-      return { userId, ...data };
-    } catch (error) {
-      return rejectWithValue("Failed to mark member present");
-    }
-  },
-);
-
 //#region start sabha by id
 export const startSabha = createAsyncThunk(
   "sabha/startSabha",
@@ -340,22 +319,6 @@ const sabhaSlice = createSlice({
       })
       .addCase(syncSabhaAttendance.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
-      });
-
-    //#region mark a single member present (QR scan)
-    // Update the scanned member + totals in place — don't replace the whole list
-    // (keeps the current group/search filter and scroll position intact).
-    builder
-      .addCase(markMemberPresent.fulfilled, (state, action) => {
-        state.totalPresentOnSelectedSabha = action.payload.total_present;
-        state.totalAbsentOnSelectedSabha = action.payload.total_absent;
-        const member = state.sabhaMembers.find(
-          (m) => m.id === action.payload.userId,
-        );
-        if (member) member.is_present = true;
-      })
-      .addCase(markMemberPresent.rejected, (state, action) => {
         state.error = action.payload as string;
       });
 

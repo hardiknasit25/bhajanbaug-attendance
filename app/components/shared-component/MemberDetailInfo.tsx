@@ -30,7 +30,7 @@ function MemberDetailInfo() {
               </span>
             </span>
             <span className="text-textLightColor text-sm">
-              HAJRI NO: <span className="text-white">{selectedMember?.id}</span>
+              ID: <span className="text-white">{selectedMember?.id}</span>
             </span>
           </div>
         </div>

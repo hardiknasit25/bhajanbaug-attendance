@@ -7,7 +7,7 @@ import {
 } from "../ui/accordion";
 import CircularProgress from "./CircularProgress";
 import MemberListCard from "./MemberListCard";
-import { Download, QrCode } from "lucide-react";
+import { Download } from "lucide-react";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { cn } from "~/lib/utils";
 import type { PoshakGroupData } from "~/types/members.interface";
@@ -121,24 +121,6 @@ function GroupAccordionMember({
                       )}
                     </div>
                   )}
-
-                  {/* QR feature hidden from the UI (kept for future use).
-                  {from === "members" && showDownload && (
-                    <QrCode
-                      size={20}
-                      role="button"
-                      aria-label="Download group QR codes"
-                      className="text-blueTextColor cursor-pointer"
-                      onClick={(e) => {
-                        // Don't toggle the accordion when downloading.
-                        e.stopPropagation();
-                        e.preventDefault();
-                        // group_id is null for the "Others" (no-group) bucket.
-                        onDownloadGroup?.(group.group_id ?? null, poshakLeaderName);
-                      }}
-                    />
-                  )}
-                  */}
                 </div>
               </AccordionTrigger>
 

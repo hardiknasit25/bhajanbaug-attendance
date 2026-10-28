@@ -2,12 +2,11 @@ import {
   Check,
   MoreVertical,
   RotateCcw,
-  ScanLine,
   Search,
   Send,
   X,
 } from "lucide-react";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   redirect,
   useLoaderData,
@@ -33,27 +32,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import {
-  MEMBER_QR_PREFIX,
-  SCAN_RESULT_VISIBLE_SECONDS,
-} from "~/constant/constant";
 import { useMembers } from "~/hooks/useMembers";
 import { useSabha } from "~/hooks/useSabha";
+import { usePermission } from "~/hooks/usePermissions";
+import { cn } from "~/lib/utils";
 import {
   clearPendingAttendance,
   hasPendingAttendance,
 } from "~/utils/pendingAttendance";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
-import {
-  playErrorBuzzer,
-  playSuccessSound,
-  primeAudio,
-} from "~/utils/sound";
-
-// The scanner pulls in html5-qrcode (a few hundred KB) and only runs while the
-// scan dialog is open, so it is split out of the attendance route's bundle.
-const QrScanner = lazy(() => import("~/components/shared-component/QrScanner"));
-
 export function meta({}: MetaArgs) {
   return [
     { title: "Members" },
@@ -103,9 +90,9 @@ export default function EventAttendance() {
     setSabhaMemberSearchText,
     submitSabhaReport,
     syncSabhaAttendance,
-    markMemberPresent,
   } = useSabha();
   const { groupSelect, fetchGroupSelect } = useMembers();
+  const { canUpdate: canUpdateSabha } = usePermission("sabha");
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const [userFilter, setUserFilter] = useState<string | undefined>(undefined);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
@@ -129,85 +116,13 @@ export default function EventAttendance() {
     buttons: [],
   });
 
-  // QR scanner (mark present by scanning a member's QR code).
-  const [scanOpen, setScanOpen] = useState(false);
-  const [scanResult, setScanResult] = useState<{
-    ok: boolean;
-    message: string;
-  } | null>(null);
-  // Guards against firing multiple present requests while one is in flight.
-  const scanBusyRef = useRef(false);
-  // Timer that auto-hides a successful scan result (the member's name).
-  const scanResultTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Clear any pending auto-hide timer on unmount.
-  useEffect(() => {
-    return () => {
-      if (scanResultTimerRef.current) clearTimeout(scanResultTimerRef.current);
-    };
-  }, []);
-
-  // Set the scan result and play matching audio feedback: the success sound on
-  // success, a buzzer on failure. On success the result (member name) auto-hides
-  // after SCAN_RESULT_VISIBLE_SECONDS.
-  const report = (result: { ok: boolean; message: string }) => {
-    // Cancel a previous auto-hide before showing the new result.
-    if (scanResultTimerRef.current) {
-      clearTimeout(scanResultTimerRef.current);
-      scanResultTimerRef.current = null;
-    }
-    setScanResult(result);
-    if (result.ok) {
-      playSuccessSound();
-      scanResultTimerRef.current = setTimeout(() => {
-        setScanResult(null);
-        scanResultTimerRef.current = null;
-      }, SCAN_RESULT_VISIBLE_SECONDS * 1000);
-    } else {
-      playErrorBuzzer();
-    }
-  };
-
-  const handleQrDecoded = async (decodedText: string) => {
-    const text = (decodedText || "").trim();
-    if (!text.startsWith(MEMBER_QR_PREFIX)) {
-      report({
-        ok: false,
-        message: "Unrecognized QR code. Please scan a member QR.",
-      });
-      return;
-    }
-    const memberId = Number(text.slice(MEMBER_QR_PREFIX.length));
-    if (!memberId || Number.isNaN(memberId)) {
-      report({ ok: false, message: "Invalid member QR code." });
-      return;
-    }
-    if (scanBusyRef.current) return;
-    scanBusyRef.current = true;
-    try {
-      const payload = await markMemberPresent(Number(sabhaId), memberId).unwrap();
-      const u = payload.users?.find((m) => m.id === memberId);
-      const name = u
-        ? `${u.first_name} ${u.middle_name ?? ""} ${u.last_name ?? ""}`
-            .replace(/\s+/g, " ")
-            .trim()
-        : `Member #${memberId}`;
-      report({ ok: true, message: `${name} is present` });
-    } catch {
-      report({
-        ok: false,
-        message: "Could not mark present. Please try again.",
-      });
-    } finally {
-      scanBusyRef.current = false;
-    }
-  };
-
-  const openScanner = () => {
-    // Unlock audio within this user gesture so scan-triggered tones can play.
-    primeAudio();
-    setScanResult(null);
-    setScanOpen(true);
+  // Tapping an active counter clears the filter; tapping the other one switches to it.
+  // Pending marks are synced first so the counts match the list.
+  const toggleUserFilter = async (key: "present" | "absent") => {
+    await syncAttendance();
+    const newFilter = userFilter === key ? undefined : key;
+    setUserFilter(newFilter);
+    fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
   };
 
   const fetchSabhaMembers = () => {
@@ -447,22 +362,13 @@ export default function EventAttendance() {
               )}
             </div>
 
-            {selectedSabha?.status === "running" && (
+            {selectedSabha?.status === "running" && canUpdateSabha && (
               <Send
                 size={22}
                 onClick={handleSubmitSabha}
                 className="cursor-pointer"
               />
             )}
-
-            {/* Scan QR to mark present - hidden from the UI (kept for future use).
-            <ScanLine
-              size={22}
-              onClick={openScanner}
-              className="cursor-pointer"
-              aria-label="Scan QR code"
-            />
-            */}
 
             {/* Group-wise filter */}
             <Popover
@@ -567,45 +473,63 @@ export default function EventAttendance() {
     >
       {/* Single scroll area: header summary stays fixed, only the list scrolls. */}
       <div className="flex h-full flex-col">
-        {/* Summary Counts */}
-        <div className="flex shrink-0 justify-around items-center p-2 shadow-sm">
-          <div
-            className="flex flex-col items-center cursor-pointer"
-            onClick={async () => {
-              await syncAttendance();
-              const newFilter =
-                userFilter === "present" ? undefined : "present";
-              setUserFilter(newFilter);
-              fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
-            }}
-          >
-            <span className="text-3xl text-green-500 font-medium font-poppins">
-              {totalPresentOnSelectedSabha}
-            </span>
-            <span className="text-base text-textColor font-medium font-poppins">
-              Present
-            </span>
-          </div>
-
-          <div
-            className="flex flex-col items-center cursor-pointer"
-            onClick={async () => {
-              await syncAttendance();
-              const newFilter = userFilter === "absent" ? undefined : "absent";
-              setUserFilter(newFilter);
-              fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
-            }}
-          >
-            <span className="text-3xl text-red-500 font-medium font-poppins">
-              {selectedSabha?.status !== "completed"
-                ? totalAbsentOnSelectedSabha
-                : totalMembersOnSelectedSabha - totalPresentOnSelectedSabha}
-            </span>
-            <span className="text-base text-textColor font-medium font-poppins">
-              Absent
-            </span>
-          </div>
+        {/* Summary Counts — each doubles as a filter toggle; the active one is
+            highlighted and a banner below says which filter is applied. */}
+        <div className="flex shrink-0 justify-around items-center gap-3 p-2 shadow-sm">
+          {(
+            [
+              { key: "present", label: "Present", color: "green", count: totalPresentOnSelectedSabha },
+              {
+                key: "absent",
+                label: "Absent",
+                color: "red",
+                count:
+                  selectedSabha?.status !== "completed"
+                    ? totalAbsentOnSelectedSabha
+                    : totalMembersOnSelectedSabha - totalPresentOnSelectedSabha,
+              },
+            ] as const
+          ).map(({ key, label, color, count }) => {
+            const active = userFilter === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={active}
+                onClick={() => toggleUserFilter(key)}
+                className={cn(
+                  "flex flex-1 flex-col items-center rounded-xl border-2 py-1 transition-colors",
+                  active
+                    ? color === "green"
+                      ? "border-green-500 bg-green-50"
+                      : "border-red-500 bg-red-50"
+                    : "border-transparent opacity-70 hover:opacity-100",
+                )}
+              >
+                <span
+                  className={cn(
+                    "text-3xl font-medium font-poppins",
+                    color === "green" ? "text-green-500" : "text-red-500",
+                  )}
+                >
+                  {count}
+                </span>
+                <span className="text-base text-textColor font-medium font-poppins">{label}</span>
+              </button>
+            );
+          })}
         </div>
+
+        {userFilter && (
+          <div className="flex shrink-0 items-center justify-between bg-blue-50 px-4 py-1.5 text-sm text-blue-700">
+            <span>
+              Filter applied: <b className="capitalize">{userFilter}</b> only
+            </span>
+            <button type="button" onClick={() => toggleUserFilter(userFilter as "present" | "absent")} className="font-medium underline">
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* Members List (the only scroll container) */}
         <div className="min-h-0 flex-1">
@@ -668,58 +592,6 @@ export default function EventAttendance() {
         </DialogContent>
       </Dialog>
 
-      {/* QR Scanner Dialog */}
-      <Dialog
-        open={scanOpen}
-        onOpenChange={(v) => {
-          setScanOpen(v);
-          if (!v) setScanResult(null);
-        }}
-      >
-        <DialogContent className="rounded-none">
-          <DialogHeader>
-            <DialogTitle className="text-textColor font-semibold">
-              Scan Member QR
-            </DialogTitle>
-          </DialogHeader>
-
-          {/* Mounting only while open starts/stops the camera with the dialog. */}
-          {scanOpen && (
-            <Suspense
-              fallback={
-                <p className="py-6 text-center text-sm text-textLightColor">
-                  Starting camera…
-                </p>
-              }
-            >
-              <QrScanner onScan={handleQrDecoded} />
-            </Suspense>
-          )}
-
-          {/* Simple result message shown below the scanner. */}
-          {scanResult && (
-            <p
-              className={
-                scanResult.ok
-                  ? "mt-3 rounded-md bg-green-100 px-3 py-2 text-center text-sm font-medium text-green-700"
-                  : "mt-3 rounded-md bg-red-100 px-3 py-2 text-center text-sm font-medium text-red-700"
-              }
-            >
-              {scanResult.ok ? `✓ ${scanResult.message}` : scanResult.message}
-            </p>
-          )}
-
-          <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setScanOpen(false)}
-            >
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </LayoutWrapper>
   );
 }

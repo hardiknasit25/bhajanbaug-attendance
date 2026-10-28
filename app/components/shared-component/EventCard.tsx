@@ -11,8 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
+import { toast } from "./Toaster";
 import { Button } from "../ui/button";
 import { useSabha } from "~/hooks/useSabha";
+import { usePermission } from "~/hooks/usePermissions";
 import { CalendarDays, Check, ChevronRight, Pencil, Trash2, X } from "lucide-react";
 
 function EventCard({ sabha }: { sabha: SabhaData }) {
@@ -25,6 +27,9 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
     totalUsers > 0 ? Math.round((totalPresents / totalUsers) * 100) : 0;
   const { startSabha, openSabhaFormDialog, deleteSabha } = useSabha();
 
+  // Upcoming/running actions follow the "sabha" module permissions.
+  const { canUpdate, canDelete } = usePermission("sabha");
+  const [starting, setStarting] = useState(false);
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   return (
@@ -39,9 +44,9 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
         // If click originated from the Start/Join/Completed button → let the button handle it
         if ((e.target as HTMLElement).closest("button")) return;
 
-        // Upcoming → open the edit dialog (unchanged behavior).
+        // Upcoming → open the edit dialog (only for users who may edit sabhas).
         if (sabha?.status === "upcoming") {
-          openSabhaFormDialog(sabha);
+          if (canUpdate) openSabhaFormDialog(sabha);
           return;
         }
 
@@ -77,22 +82,24 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
           )}
           {status === "upcoming" && (
             <>
-              <Pencil size={16} />
-              <button
-                type="button"
-                aria-label="Delete sabha"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setDeleteOpen(true);
-                }}
-                className="text-redTextColor z-20"
-              >
-                <Trash2 size={16} />
-              </button>
+              {canUpdate && <Pencil size={16} />}
+              {canDelete && (
+                <button
+                  type="button"
+                  aria-label="Delete sabha"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setDeleteOpen(true);
+                  }}
+                  className="text-redTextColor z-20"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </>
           )}
-          {status !== "completed" && (
+          {status !== "completed" && (status === "running" || canUpdate) && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -157,13 +164,22 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
             </Button>
 
             <Button
-              onClick={() => {
-                startSabha(sabha.id); // ⬅ wait for API
-                setOpen(false);
-                navigate(`/sabha/attendance/${sabha.id}`);
+              disabled={starting}
+              onClick={async () => {
+                // Only open the attendance page once the server confirmed the sabha is running.
+                setStarting(true);
+                try {
+                  await startSabha(sabha.id).unwrap();
+                  setOpen(false);
+                  navigate(`/sabha/attendance/${sabha.id}`);
+                } catch {
+                  toast.error("Could not start the sabha. Please try again.");
+                } finally {
+                  setStarting(false);
+                }
               }}
             >
-              Confirm
+              {starting ? "Starting..." : "Confirm"}
             </Button>
           </DialogFooter>
         </DialogContent>

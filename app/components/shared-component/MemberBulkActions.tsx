@@ -5,7 +5,6 @@ import {
   Download,
   FileDown,
   MoreVertical,
-  QrCode,
   Upload,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -50,7 +49,7 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState<
-    "template" | "export" | "import" | "qr" | null
+    "template" | "export" | "import" | null
   >(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,22 +85,6 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
     }
   };
 
-  const handleDownloadQr = async () => {
-    setMenuOpen(false);
-    try {
-      setBusy("qr");
-      const blob = await memberService.downloadQrCodes();
-      triggerDownload(blob, "member_qr_codes.pdf");
-    } catch (e: any) {
-      setErrorMsg(
-        e?.response?.data?.message || e?.message || "Failed to download QR codes",
-      );
-      setResult(null);
-      setResultOpen(true);
-    } finally {
-      setBusy(null);
-    }
-  };
 
   const handleImportClick = () => {
     setMenuOpen(false);
@@ -173,16 +156,6 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
             <Download size={18} className="text-primaryColor" />
             <span>Export members</span>
           </button>
-          {/* QR feature hidden from the UI (kept for future use).
-          <button
-            type="button"
-            onClick={handleDownloadQr}
-            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-gray-100 text-left"
-          >
-            <QrCode size={18} className="text-primaryColor" />
-            <span>Download QR codes</span>
-          </button>
-          */}
           {canCreate && (
             <button
               type="button"

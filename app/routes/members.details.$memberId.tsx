@@ -10,7 +10,6 @@ import DeleteMemberDialog from "~/components/shared-component/DeleteMemberDialog
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
-import MemberQrDialog from "~/components/shared-component/MemberQrDialog";
 import Can from "~/components/shared-component/Can";
 import { useMembers } from "~/hooks/useMembers";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
@@ -68,20 +67,6 @@ function MemberDetails() {
         iconName: "ArrowLeft",
         children: (
           <div className="flex justify-center items-center gap-4 pr-2">
-            {/* QR feature hidden from the UI (kept for future use).
-            <MemberQrDialog
-              memberId={Number(memberId)}
-              memberName={
-                selectedMember
-                  ? `${selectedMember.first_name ?? ""} ${
-                      selectedMember.middle_name ?? ""
-                    } ${selectedMember.last_name ?? ""}`
-                  : undefined
-              }
-              smkNo={selectedMember?.smk_no}
-              mobile={selectedMember?.mobile}
-            />
-            */}
             <ChartColumn
               size={18}
               onClick={() => navigate(`/members/report/${memberId}`)}
@@ -112,6 +97,7 @@ function MemberDetails() {
             <MemberDetail
               title="Personal Info"
               details={[
+                { title: "id", value: selectedMember?.id?.toString() ?? null },
                 { title: "email", value: selectedMember?.email ?? null },
                 { title: "mobile no.", value: selectedMember?.mobile ?? null },
                 {

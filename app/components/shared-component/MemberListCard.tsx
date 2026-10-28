@@ -1,5 +1,5 @@
 import { ChartColumn, Check, X } from "lucide-react";
-import { memo, useRef } from "react";
+import { memo } from "react";
 import type { MemberData } from "~/types/members.interface";
 import ImageComponent from "./ImageComponent";
 import { useNavigate } from "react-router";
@@ -22,7 +22,9 @@ function MemberListCard({
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Attendance can only be changed while the sabha is running (the API enforces this too).
+  const attendanceLocked = from === "attendance" && !!selectedSabha && selectedSabha.status !== "running";
 
   const handlePresentClick = (id: number) => {
     // Dispatch directly so each card does NOT subscribe to the whole sabha slice.
@@ -35,17 +37,11 @@ function MemberListCard({
 
   return (
     <div
-      ref={cardRef}
       className={cn(
         "relative flex justify-center gap-2 p-2 pl-4 transition-all",
         from === "members" ? "items-center" : "items-start",
       )}
       onClick={(e) => {
-        // The QR preview dialog is portaled to <body>, but its clicks still
-        // bubble through the React tree to this handler. Ignore any click whose
-        // target isn't actually inside this card (close / download / overlay),
-        // otherwise closing the dialog would navigate to the details page.
-        if (!cardRef.current?.contains(e.target as Node)) return;
         if (from === "attendance") return;
         else if (from === "report") navigate(`/members/report/${member.id}`);
         else navigate(`/members/details/${member.id}`);
@@ -65,6 +61,8 @@ function MemberListCard({
 
         {/* ID Section */}
         <p className="text-xs font-medium text-gray-400">
+          ID: <span className="text-gray-600 font-semibold">{member.id}</span>
+          <span className="mx-2 text-gray-300">|</span>
           SMK ID:{" "}
           <span className="text-gray-600 font-semibold">
             {member.smk_no !== null && member.smk_no !== "NA"
@@ -78,12 +76,13 @@ function MemberListCard({
           <div className="w-full flex justify-start items-center gap-12 mt-0.5 pl-4">
             {/* 1. Present / Green Check */}
             <button
+              disabled={attendanceLocked}
               onClick={() => {
                 if (member?.is_present) return;
                 handlePresentClick(member?.id);
               }}
               className={cn(
-                "flex items-center justify-center rounded-full transition-transform p-1",
+                "flex items-center justify-center rounded-full transition-transform p-1 disabled:cursor-not-allowed",
                 member.is_present && "bg-greenTextColor",
               )}
               aria-label="Mark Present"
@@ -100,6 +99,7 @@ function MemberListCard({
 
             {/* 2. Absent / Red Cross */}
             <button
+              disabled={attendanceLocked}
               onClick={() => {
                 if (member?.is_present === false) return;
                 handleAbsentClick(member?.id);
@@ -158,18 +158,6 @@ function MemberListCard({
         )}
       </div>
 
-      {/* Per-member QR preview + download - hidden from the UI (kept for future use).
-      {from === "members" && (
-        <MemberQrDialog
-          memberId={member.id}
-          memberName={memberName}
-          smkNo={member.smk_no}
-          mobile={member.mobile}
-          iconSize={20}
-          className="shrink-0 self-center rounded-full p-2 text-primaryColor hover:bg-gray-100"
-        />
-      )}
-      */}
       <Separator
         orientation="vertical"
         className="absolute bg-borderColor/30 w-[95%] h-[1px] bottom-0 left-1/2 right-1/2 translate-x-[-50%]"

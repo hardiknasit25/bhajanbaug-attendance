@@ -4,7 +4,6 @@ import {
   KeyRound,
   LogOut,
   ShieldCheck,
-  User,
   UsersRound,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -91,14 +90,6 @@ function Sidebar() {
       </div>
 
       <div className="flex w-full flex-1 flex-col items-start justify-start gap-1 overflow-y-auto p-6">
-        {/* Profile */}
-        <SheetClose asChild>
-          <button type="button" className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-textColor transition-colors hover:bg-gray-100">
-            <User size={20} className="text-textLightColor" />
-            <span className="text-lg font-light uppercase">profile</span>
-          </button>
-        </SheetClose>
-
         {/* Management (role / permission) — gated by access */}
         {managementItems.length > 0 && (
           <>
